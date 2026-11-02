@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en" data-lang="en" data-game-mode="normal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Horizon Overdrive: Endless Highway</title>
+  <!-- CrazyGames 官方 SDK v3（带 data-optional-sdk 与 async 标记，离线或非宿主环境零阻塞容错） -->
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js" data-optional-sdk="true" async></script>
+  <!-- 网站图标与核心样式表 -->
+  <link rel="icon" href="./assets/images/favicon.svg?v=20261102b">
+  <link id="game-style" rel="stylesheet" href="./assets/css/drive.css?v=20261102b">
+  <link rel="stylesheet" href="./assets/css/boot.css?v=20261102b">
+  <link rel="stylesheet" href="./assets/css/desktop-controls.css?v=20261102b">
+</head>
+<body>
+  <!-- ==================== 1. 备用主控大厅屏幕（CrazyGames 直进模式下默认隐藏） ==================== -->
+  <section id="mode-screen" class="mode-screen" aria-label="Horizon Overdrive Main Menu" data-i18n-aria="home.menuAria" hidden>
+    <!-- 动态霓虹地平线背景视觉层（纯 CSS 渲染，彻底告别原版静态截图） -->
+    <div class="horizon-backdrop" aria-hidden="true">
+      <div class="horizon-stars"></div>
+      <div class="horizon-sun"></div>
+      <div class="horizon-mountains"></div>
+      <div class="horizon-grid"></div>
+    </div>
+
+    <div class="mode-content story-home-layout">
+      <!-- 左侧品牌与赛段概览展示区 -->
+      <div class="mode-hero">
+        <div class="mode-brand">
+          <p class="mode-eyebrow" data-i18n="home.eyebrow">HORIZON OVERDRIVE · 3D ARCADE RACING</p>
+          <h1 data-i18n="home.title">HORIZON OVERDRIVE</h1>
+          <p class="mode-tagline" data-i18n="home.tagline">Roaring engines, slicing the wind—race into the endless horizon.</p>
+        </div>
+        <div class="mode-caption">
+          <b data-i18n="home.captionTitle">28 Seamless All-Terrain Stages</b><span data-i18n="home.captionSub">Misty Peaks / Neon Metro / Sea Bridge / Red Canyon / Alpine Snow</span>
+        </div>
+      </div>
+
+      <!-- 右侧载具选择、偏好设置与核心出发入口 -->
+      <div class="mode-controls">
+        <h2 data-i18n="home.readyTitle">Ready to Roll</h2>
+        <p class="mode-intro" data-i18n="home.readyIntro">Tune your ride and unleash full-throttle speed across every terrain.</p>
+
+        <!-- 当前载具预览与车库入口 -->
+        <div class="home-vehicle">
+          <div>
+            <span class="vehicle-caption" data-i18n="home.currentVehicle">CURRENT RIDE</span>
+            <strong>Gale GT Coupe</strong>
+          </div>
+          <button type="button" class="garage-preview"><i data-i18n="home.switchVehicle" style="font-style:normal">Switch Ride</i> <span aria-hidden="true">→</span></button>
+        </div>
+
+        <!-- 游戏设置弹窗触发按钮 -->
+        <button type="button" class="game-settings-open" aria-haspopup="dialog">
+          <span data-i18n="home.settingsOpen">Driving Preferences</span>
+          <span id="settings-summary">Landscape · 1st Person · Wheel</span>
+          <span aria-hidden="true">›</span>
+        </button>
+
+        <!-- 唯一核心狂飙入口（融合氮气加速、惊险超车连击与强力撞飞物理） -->
+        <button type="button" class="mode-choice normal" data-mode-selection="normal">
+          <span class="mode-symbol" aria-hidden="true">GO</span>
+          <span><strong data-i18n="home.startTitle">START OVERDRIVE</strong><small data-i18n="home.startSub">Press Shift / N for NOS Boost, chain Near-Miss Combos &amp; side-ram slow traffic!</small></span>
+          <span class="mode-arrow" aria-hidden="true">→</span>
+        </button>
+
+        <p id="mode-hint" class="mode-footer" data-i18n="home.hint">Near-miss overtakes recharge NOS fast · Press Shift / N for Overdrive Boost</p>
+        <noscript>Please enable JavaScript to launch the game.</noscript>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 1.5 游戏内驾驶偏好设置模态弹窗 ==================== -->
+  <div class="game-settings-overlay" hidden>
+    <section class="game-settings-panel" role="dialog" aria-modal="true" aria-labelledby="game-settings-title" tabindex="-1">
+      <header>
+        <h2 id="game-settings-title" data-i18n="settings.title">Driving Preferences</h2>
+        <button type="button" data-settings-close aria-label="Close settings" data-i18n-aria="settings.closeAria"><span aria-hidden="true"></span></button>
+      </header>
+      <div class="drive-preferences">
+        <div class="preference-row language-row" role="group" aria-label="Language" data-i18n-aria="settings.langAria">
+          <span data-i18n="settings.language">Language</span>
+          <button type="button" data-lang-select="en" aria-pressed="true">English</button>
+          <button type="button" data-lang-select="zh" aria-pressed="false">中文</button>
+        </div>
+        <div class="preference-row" role="group" aria-label="Screen orientation" data-i18n-aria="settings.oriAria">
+          <span data-i18n="settings.orientation">Orientation</span>
+          <button type="button" data-orientation="portrait" aria-pressed="true" data-i18n="settings.portrait">Portrait</button>
+          <button type="button" data-orientation="landscape" aria-pressed="false" data-i18n="settings.landscape">Landscape</button>
+        </div>
+        <div class="preference-row" role="group" aria-label="Camera view" data-i18n-aria="settings.camAria">
+          <span data-i18n="settings.camera">Camera View</span>
+          <button type="button" data-camera="first" aria-pressed="true" data-i18n="settings.firstPerson">1st Person</button>
+          <button type="button" data-camera="third" aria-pressed="false" data-i18n="settings.thirdPerson">3rd Person</button>
+        </div>
+        <div class="preference-row" role="group" aria-label="Control mode" data-i18n-aria="settings.ctrlAria">
+          <span data-i18n="settings.controls">Controls</span>
+          <button type="button" data-controls="wheel" aria-pressed="false" data-i18n="settings.wheel">Wheel</button>
+          <button type="button" data-controls="buttons" aria-pressed="true" data-i18n="settings.buttons">Buttons</button>
+        </div>
+        <div class="preference-row lighting-row" role="group" aria-label="Dynamic lighting" data-i18n-aria="settings.lightAria">
+          <span data-i18n="settings.lighting">Dynamic Lighting</span>
+          <button type="button" data-lighting="on" aria-pressed="false" data-i18n="settings.on">On</button>
+          <button type="button" data-lighting="off" aria-pressed="true" data-i18n="settings.off">Off</button>
+        </div>
+        <div class="preference-row music-volume-row">
+          <label for="bgm-volume" data-i18n="settings.bgmVolume">Radio BGM Volume</label>
+          <input id="bgm-volume" type="range" min="0" max="100" step="1" value="50" aria-label="Background music volume" data-i18n-aria="settings.bgmAria" />
+          <output id="bgm-volume-value" for="bgm-volume">50</output>
+        </div>
+        <!-- 新手交互引导重温入口 -->
+        <div class="preference-row tutorial-preference-row" role="group" aria-label="Onboarding tutorial" data-i18n-aria="settings.tutorialAria">
+          <span data-i18n="settings.tutorial">Driving Academy</span>
+          <button type="button" class="tutorial-replay-btn" data-tutorial-replay data-i18n="settings.tutorialReplay">📖 Replay Tutorial</button>
+        </div>
+      </div>
+      <button type="button" class="game-settings-done" data-settings-close data-i18n="settings.done">Save &amp; Resume Driving</button>
+    </section>
+  </div>
+
+  <!-- ==================== 2. 游戏启动与 3D 场景加载屏幕 ==================== -->
+  <div id="boot-screen" class="boot-screen" role="status" aria-live="polite">
+    <div class="boot-content">
+      <p class="boot-kicker">HORIZON OVERDRIVE · 3D ENGINE</p>
+      <div class="boot-scene" aria-hidden="true">
+        <div class="boot-sun"></div>
+        <div class="boot-hill"></div>
+        <div class="boot-hill second"></div>
+        <div class="boot-road"><i class="boot-lines"></i></div>
+        <div class="boot-car"></div>
+      </div>
+      <h1 data-i18n="boot.title">HORIZON OVERDRIVE</h1>
+      <p class="boot-tagline" data-i18n="boot.tagline">Endless All-Terrain Highway · High-Speed Arcade Racing</p>
+      <div class="boot-status">
+        <div class="boot-track" aria-hidden="true"><i></i></div>
+        <p id="boot-message" data-i18n="boot.loading">Building 3D highway &amp; vehicle physics engine…</p>
+      </div>
+      <noscript>Please enable JavaScript to run the game.</noscript>
+    </div>
+  </div>
+
+  <!-- ==================== 3. 车库三维实时预览与座驾切换弹窗 ==================== -->
+  <div class="garage-overlay" hidden>
+    <section class="garage-panel" role="dialog" aria-modal="true" aria-labelledby="garage-title" tabindex="-1">
+      <div class="garage-heading">
+        <h2 id="garage-title" data-i18n="garage.title">HORIZON GARAGE</h2>
+        <!-- 车库积分余额（驾驶超车获得，可用于解锁座驾） -->
+        <div class="garage-wallet" aria-live="polite" title="Points earned from overtakes are automatically saved to your garage wallet" data-i18n-title="garage.walletTitle">
+          <span data-i18n="garage.pointsLabel">PTS</span><b id="garage-wallet-points">0</b>
+        </div>
+        <button type="button" data-garage-close aria-label="Close garage" data-i18n-aria="garage.closeAria">×</button>
+      </div>
+      <div class="garage-body">
+        <!-- 车辆 3D 实时旋转预览舞台与生涯最高纪录勋章条 -->
+        <div class="garage-stage">
+          <div id="garage-render" tabindex="0" role="img" aria-label="3D vehicle preview, drag or press arrow keys to rotate" data-i18n-aria="garage.renderAria"></div>
+          <span class="garage-drag-hint" data-i18n="garage.dragHint">DRAG LEFT / RIGHT FOR 360° INSPECTION</span>
+          <!-- 个人最高纪录荣誉栏（由 boot.js paintRecords 实时刷新） -->
+          <div class="garage-records-bar" id="garage-records-bar" role="region" aria-label="Personal best records" data-i18n-aria="garage.recordsAria">
+            <div class="garage-record-item">
+              <span class="garage-record-label" data-i18n="garage.recScore">🏆 BEST SCORE</span>
+              <b class="garage-record-val" id="garage-rec-score">0 PTS</b>
+            </div>
+            <div class="garage-record-item">
+              <span class="garage-record-label" data-i18n="garage.recDistance">🛣️ BEST TRIP</span>
+              <b class="garage-record-val" id="garage-rec-distance">0.0 km</b>
+            </div>
+            <div class="garage-record-item">
+              <span class="garage-record-label" data-i18n="garage.recCombo">⚡ MAX COMBO</span>
+              <b class="garage-record-val" id="garage-rec-combo">×0</b>
+            </div>
+          </div>
+        </div>
+        <!-- 4 款原创载具列表与性能说明 -->
+        <div class="garage-picker">
+          <div class="garage-options" role="group" aria-label="Select vehicle" data-i18n-aria="garage.chooseAria">
+            <button type="button" data-choose-vehicle="sedan" aria-pressed="true"><small>01</small><span data-i18n="vehicle.sedanShort">Gale GT</span><em class="garage-option-tag"></em></button>
+            <button type="button" data-choose-vehicle="motorcycle" aria-pressed="false"><small>02</small><span data-i18n="vehicle.motorcycleShort">Phantom Bike</span><em class="garage-option-tag"></em></button>
+            <button type="button" data-choose-vehicle="jet" aria-pressed="false"><small>03</small><span data-i18n="vehicle.jetShort">Aether V8 Jet</span><em class="garage-option-tag"></em></button>
+            <button type="button" data-choose-vehicle="truck" aria-pressed="false"><small>04</small><span data-i18n="vehicle.truckShort">Titan Truck</span><em class="garage-option-tag"></em></button>
+          </div>
+          <div class="garage-car" data-garage-car="sedan">
+            <h3 data-i18n="vehicle.sedan">Gale GT Coupe</h3>
+            <p data-i18n="vehicle.sedanDesc">Low-slung widebody aero kit with a carbon GT wing. Razor-sharp handling—side-swipe slow traffic to send them flying.</p>
+          </div>
+          <div class="garage-car" data-garage-car="motorcycle" hidden>
+            <h3 data-i18n="vehicle.motorcycle">Phantom Superbike</h3>
+            <p data-i18n="vehicle.motorcycleDesc">Track-tuned streetfighter with a full-visor cyber rider. Ultra-narrow profile for weaving through traffic with wheelie, stoppie &amp; flip stunts.</p>
+          </div>
+          <div class="garage-car" data-garage-car="jet" hidden>
+            <h3 data-i18n="vehicle.jet">Aether V8 AeroCar</h3>
+            <p data-i18n="vehicle.jetDesc">Equipped with six vectored ion thrusters. Launch into the sky to soar over gridlock, with mid-air flip recovery and anti-gravity glide.</p>
+          </div>
+          <div class="garage-car" data-garage-car="truck" hidden>
+            <h3 data-i18n="vehicle.truck">Titan V12 Heavy Truck</h3>
+            <p data-i18n="vehicle.truckDesc">Armored with a heavy chrome bullbar and quad roof floodlights. Unstoppable tonnage supremacy—ram any vehicle front or side unscathed!</p>
+          </div>
+          <!-- 车型五维性能对比与专属被动特长面板（由 boot.js paintSpecs 实时刷新） -->
+          <div class="garage-specs" id="garage-specs" data-spec-vehicle="sedan">
+            <div class="garage-perk-badge">
+              <div class="garage-perk-header">
+                <span class="garage-perk-role" id="garage-perk-role">BALANCED DRIFT</span>
+                <strong class="garage-perk-title" id="garage-perk-title">🌀 Slipstream Drift Master</strong>
+              </div>
+              <p class="garage-perk-desc" id="garage-perk-desc">180°/360° drift stunts grant a 1.8s damage shield &amp; +25% NOS; normal overtakes restore +9% NOS.</p>
+            </div>
+            <div class="garage-stats-grid" role="list" aria-label="Vehicle performance specifications" data-i18n-aria="garage.specsAria">
+              <div class="garage-stat-row" role="listitem">
+                <div class="garage-stat-label"><span data-i18n="garage.statSpeed">Top Speed (Base / NOS)</span><b id="garage-stat-speed-val">285 / 355 km/h</b></div>
+                <div class="garage-stat-bar"><i id="garage-stat-speed-bar" style="width: 68%"></i></div>
+              </div>
+              <div class="garage-stat-row" role="listitem">
+                <div class="garage-stat-label"><span data-i18n="garage.statAccel">Acceleration</span><b id="garage-stat-accel-val">1.05× Linear</b></div>
+                <div class="garage-stat-bar"><i id="garage-stat-accel-bar" style="width: 66%"></i></div>
+              </div>
+              <div class="garage-stat-row" role="listitem">
+                <div class="garage-stat-label"><span data-i18n="garage.statHandling">Handling &amp; Brakes</span><b id="garage-stat-handling-val">1.10× Agile</b></div>
+                <div class="garage-stat-bar"><i id="garage-stat-handling-bar" style="width: 76%"></i></div>
+              </div>
+              <div class="garage-stat-row" role="listitem">
+                <div class="garage-stat-label"><span data-i18n="garage.statArmor">Armor &amp; Durability</span><b id="garage-stat-armor-val">4 Hits (-25%)</b></div>
+                <div class="garage-stat-bar"><i id="garage-stat-armor-bar" style="width: 55%"></i></div>
+              </div>
+            </div>
+          </div>
+          <!-- 定制涂装工坊面板：每车 5 款专属涂装，支持 3D 实时变色预览与积分兑换（由 boot.js paintWorkshop 实时刷新） -->
+          <div class="garage-paint-workshop" id="garage-paint-workshop" role="region" aria-label="Custom paint and livery workshop" data-i18n-aria="garage.paintAria">
+            <div class="garage-paint-header">
+              <span class="garage-paint-title" data-i18n="garage.paintTitle">🎨 Custom Livery</span>
+              <strong class="garage-paint-name" id="garage-paint-name">Cobalt GT</strong>
+              <button type="button" class="garage-paint-action" id="garage-paint-action" data-paint-state="equipped">✔ Equipped</button>
+            </div>
+            <div class="garage-paint-swatches" id="garage-paint-swatches" role="group" aria-label="Choose paint color" data-i18n-aria="garage.paintSwatchesAria"></div>
+          </div>
+          <!-- 积分解锁信息：价格 / 拥有状态、积分进度条与获取提示（由 boot.js paintUnlock 实时刷新） -->
+          <div class="garage-unlock" id="garage-unlock" data-owned="true">
+            <div class="garage-unlock-row">
+              <span id="garage-unlock-label">Ride Status</span>
+              <b id="garage-unlock-value">✔ Starter Ride · Owned</b>
+            </div>
+            <div class="garage-unlock-bar" role="progressbar" aria-label="Unlock progress" data-i18n-aria="garage.progressAria" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i></i></div>
+            <p class="garage-unlock-tip" id="garage-unlock-tip" aria-live="polite" hidden></p>
+          </div>
+          <button type="button" class="garage-confirm" data-state="drive">Drive This Ride</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== 4. React + Three.js 驾驶主视图挂载根节点 ==================== -->
+  <div id="root"></div>
+
+  <!-- ==================== 5. 游戏核心脚本按序加载 ==================== -->
+  <script src="./assets/js/desktop-controls.js?v=20261102b"></script>
+  <script src="./assets/js/viewport.js?v=20261102b"></script>
+  <script src="./assets/js/boot.js?v=20261102b"></script>
+  <script src="./assets/js/vendor-engine.js?v=20261102b"></script>
+  <script src="./assets/js/drive-models.js?v=20261102b"></script>
+  <script src="./assets/js/drive-maps.js?v=20261102b"></script>
+  <script src="./assets/js/drive.js?v=20261102b"></script>
+</body>
+</html>
