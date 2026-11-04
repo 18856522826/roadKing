@@ -1,0 +1,834 @@
+/* ==================== 《地平线狂飙：无尽公路》极简街机风 UI 主题层 (arcade-ui.css) ==================== */
+/* 最后加载，统一覆盖驾驶 HUD、结算面板、车库、设置与加载页的视觉与默认布局：
+   - 去掉卡片底框、渐变与发光，改用半透明深色 + 发丝描边，信息贴边、不挡赛道
+   - 数字统一斜体粗体等宽，街机仪表感
+   - 布局只改默认位置且不加 !important，「Controls」布局编辑器写入的内联位置仍然优先 */
+
+:root {
+  --ui-font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  --ui-text: #f5f7fa;
+  --ui-dim: #8d99ab;
+  --ui-faint: #5b6678;
+  --ui-accent: #00e5ff;
+  --ui-nos: #ff7a1a;
+  --ui-gold: #ffc940;
+  --ui-danger: #ff4d6a;
+  --ui-ok: #3ee08f;
+  --ui-glass: rgba(7, 10, 16, 0.58);
+  --ui-glass-hover: rgba(12, 18, 28, 0.78);
+  --ui-surface: #0c1018;
+  --ui-surface-2: #131926;
+  --ui-line: rgba(255, 255, 255, 0.12);
+  --ui-line-strong: rgba(255, 255, 255, 0.24);
+  --ui-radius: 10px;
+  --ui-pad: 14px;
+  --ui-gap: 6px;
+  --ui-btn-h: 34px;
+  --ui-shadow-text: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.45);
+}
+@media (max-height: 520px), (max-width: 760px) {
+  :root {
+    --ui-pad: 10px;
+    --ui-gap: 5px;
+    --ui-btn-h: 30px;
+  }
+}
+
+/* ==================== 1. 驾驶 HUD：通用按钮外观 ==================== */
+html body main > .game-ui .home-return-button .hud-quick-btn,
+html body main > .game-ui .control-tools .control-tool-btn,
+html body main > .game-ui .emote-controls > .emote-toggle,
+html body main > .game-ui > .reverse-view-button,
+html[data-desktop='true'] body main[data-mode] > .game-ui > .desktop-hints-toggle {
+  height: var(--ui-btn-h);
+  min-height: var(--ui-btn-h);
+  padding: 0 11px;
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: var(--ui-glass);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: none;
+  color: var(--ui-text);
+  font: 600 12px/1 var(--ui-font);
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+html body main > .game-ui .home-return-button .hud-quick-btn:hover,
+html body main > .game-ui .control-tools .control-tool-btn:hover,
+html body main > .game-ui .emote-controls > .emote-toggle:hover,
+html body main > .game-ui > .reverse-view-button:hover:not(:disabled),
+html[data-desktop='true'] body main[data-mode] > .game-ui > .desktop-hints-toggle:hover {
+  border-color: var(--ui-line-strong);
+  background: var(--ui-glass-hover);
+  box-shadow: none;
+  transform: none;
+}
+html body main > .game-ui .home-return-button .hud-quick-btn.hud-tutorial-btn {
+  border-color: var(--ui-line);
+  color: var(--ui-text);
+}
+html body main > .game-ui .emote-controls > .emote-toggle[aria-expanded='true'],
+html body main > .game-ui > .reverse-view-button[data-third='true'] {
+  border-color: var(--ui-accent);
+  color: var(--ui-accent);
+  background: var(--ui-glass-hover);
+  box-shadow: none;
+}
+html body main > .game-ui .home-return-button .hud-quick-btn,
+html body main > .game-ui .control-tools .control-tool-btn,
+html body main > .game-ui .emote-controls > .emote-toggle { position: relative; }
+html body main > .game-ui .hud-btn-icon { color: currentColor; opacity: 0.9; }
+
+/* 快捷键角标：缩成按钮右上角的小号键帽 */
+html body main > .game-ui .hud-kbd {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 15px;
+  height: 15px;
+  margin: 0;
+  padding: 0 3px;
+  box-sizing: border-box;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 4px;
+  background: var(--ui-surface);
+  box-shadow: none;
+  color: var(--ui-dim);
+  font: 700 9px/13px var(--ui-font);
+  text-align: center;
+}
+
+/* 相机 / 表情 / 键位提示开关收成方形图标按钮（文字保留在 title 与 aria-label 中） */
+html body main > .game-ui > .reverse-view-button,
+html body main > .game-ui .emote-controls > .emote-toggle,
+html[data-desktop='true'] body main[data-mode] > .game-ui > .desktop-hints-toggle {
+  width: var(--ui-btn-h);
+  min-width: 0;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+}
+html body main > .game-ui > .reverse-view-button .camera-btn-label,
+html body main > .game-ui .emote-controls > .emote-toggle .emote-toggle-label,
+html[data-desktop='true'] body main[data-mode] > .game-ui > .desktop-hints-toggle .hints-toggle-label {
+  display: none;
+}
+html[data-desktop='true'] body main[data-mode] > .game-ui > .desktop-hints-toggle .hints-status-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+}
+html[data-desktop='true'] body main[data-mode] > .game-ui > .desktop-hints-toggle .hints-key-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ==================== 2. 驾驶 HUD：横屏默认布局 ==================== */
+/* 右上角三行工具栏：① 车库/设置/引导/语言 ② 布局/重置 ③ 键位提示/表情/视角 */
+html[data-orientation=landscape] body main > .game-ui > .home-return-button.hud-quick-actions {
+  top: calc(var(--ui-pad) + var(--safe-top, 0px));
+  right: calc(var(--ui-pad) + var(--safe-right, 0px));
+  left: auto;
+  height: var(--ui-btn-h);
+  min-height: var(--ui-btn-h);
+  padding: 0;
+  gap: var(--ui-gap);
+  line-height: 1;
+}
+html[data-orientation=landscape] body main > .game-ui > .control-tools {
+  top: calc(var(--ui-pad) + var(--safe-top, 0px) + var(--ui-btn-h) + var(--ui-gap));
+  right: calc(var(--ui-pad) + var(--safe-right, 0px));
+  left: auto;
+  gap: var(--ui-gap);
+}
+html[data-orientation=landscape] body main > .game-ui > .reverse-view-button,
+html[data-orientation=landscape] body main > .game-ui > .emote-controls,
+html[data-desktop='true'][data-orientation=landscape] body main[data-mode] > .game-ui > .desktop-hints-toggle {
+  top: calc(var(--ui-pad) + var(--safe-top, 0px) + 2 * (var(--ui-btn-h) + var(--ui-gap)));
+  left: auto;
+  bottom: auto;
+}
+html[data-orientation=landscape] body main > .game-ui > .reverse-view-button {
+  right: calc(var(--ui-pad) + var(--safe-right, 0px));
+}
+html[data-orientation=landscape] body main > .game-ui > .emote-controls {
+  right: calc(var(--ui-pad) + var(--safe-right, 0px) + var(--ui-btn-h) + var(--ui-gap));
+}
+html[data-desktop='true'][data-orientation=landscape] body main[data-mode] > .game-ui > .desktop-hints-toggle {
+  right: calc(var(--ui-pad) + var(--safe-right, 0px) + 2 * (var(--ui-btn-h) + var(--ui-gap)));
+}
+
+/* 桌面端右上角只保留 设置 / 引导 / 语言：换车(G)、复位(R)、视角(C)、表情(B) 都有快捷键并列在键位提示条里；
+   表情只隐藏按钮不隐藏容器，按 B 弹出的表情菜单仍挂在容器里。触屏设备没有键盘，保留全部按钮 */
+html[data-desktop='true'] body main > .game-ui .home-return-button .hud-garage-btn,
+html[data-desktop='true'] body main > .game-ui > .control-tools,
+html[data-desktop='true'] body main > .game-ui > .reverse-view-button,
+html[data-desktop='true'] body main > .game-ui .emote-controls > .emote-toggle,
+html[data-desktop='true'] body main[data-mode] > .game-ui > .desktop-hints-toggle {
+  display: none;
+}
+
+/* 窄横屏（如 CrazyGames 854×480）收紧第一行按钮，给中央后视镜留出间隙 */
+@media (max-width: 980px) {
+  html[data-orientation=landscape] body main > .game-ui > .home-return-button.hud-quick-actions { gap: 4px; }
+  html body main > .game-ui .home-return-button .hud-quick-btn { padding: 0 8px; font-size: 11.5px; }
+}
+
+/* 左上角行程信息：去掉卡片，直接用大号数字贴边 */
+html[data-orientation=landscape] body main > .game-ui > aside {
+  top: calc(var(--ui-pad) + var(--safe-top, 0px));
+  left: calc(var(--ui-pad) + var(--safe-left, 0px));
+  right: auto;
+  width: 176px;
+  height: auto;
+  margin-top: 0;
+}
+html body main > .game-ui > aside {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  color: var(--ui-text);
+  font-family: var(--ui-font);
+  text-shadow: var(--ui-shadow-text);
+}
+html body main > .game-ui > aside .eyebrow {
+  color: var(--ui-dim);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+html body main > .game-ui > aside .distance {
+  margin: 2px 0 6px;
+  color: var(--ui-text);
+  font: italic 800 30px/1 var(--ui-font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+html body main > .game-ui > aside .distance small {
+  margin-left: 4px;
+  color: var(--ui-dim);
+  font: 700 11px/1 var(--ui-font);
+  font-style: normal;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+html body main > .game-ui > aside .horizon-score-badge {
+  margin: 0 0 8px;
+  padding: 0;
+  border: 0;
+  color: var(--ui-dim);
+  font: 700 10px/1 var(--ui-font);
+  letter-spacing: 1.4px;
+  justify-content: flex-start;
+  gap: 8px;
+}
+html body main > .game-ui > aside .horizon-score-badge b {
+  margin-left: 4px;
+  color: var(--ui-gold);
+  font: italic 800 16px/1 var(--ui-font);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+html body main > .game-ui > aside .horizon-score-badge .hud-best-pill {
+  margin-left: 0;
+  padding: 2px 6px;
+  border: 1px solid var(--ui-line);
+  border-radius: 4px;
+  background: none;
+  box-shadow: none;
+  color: var(--ui-dim);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-shadow: none;
+}
+html body main > .game-ui > aside .horizon-score-badge .hud-best-pill.is-new {
+  border-color: var(--ui-gold);
+  background: none;
+  box-shadow: none;
+  color: var(--ui-gold);
+}
+html body main > .game-ui > aside .integrity-status { margin-top: 0; }
+html body main > .game-ui > aside .integrity-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  color: var(--ui-dim);
+  font: 700 9px/1.2 var(--ui-font);
+  letter-spacing: 1.4px;
+  white-space: nowrap;
+}
+html body main > .game-ui > aside .integrity-label b {
+  margin-left: 6px;
+  color: var(--ui-text);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+html body main > .game-ui > aside .integrity-bar {
+  height: 3px;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: none;
+}
+html body main > .game-ui > aside .integrity-bar i {
+  border-radius: 2px;
+  background: var(--ui-ok);
+  box-shadow: none;
+}
+html[data-orientation=landscape] body main > .game-ui > .junction-status {
+  top: calc(var(--ui-pad) + var(--safe-top, 0px) + 96px);
+  left: calc(var(--ui-pad) + var(--safe-left, 0px));
+  width: 176px;
+  transform: none;
+  margin-top: 0;
+}
+
+/* 顶部中央后视镜：只留细边框（镜像由底层画布绘制，这里不能加背景色） */
+html body main > .game-ui > .rear-mirror {
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--ui-radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+html[data-orientation=landscape] body main > .game-ui > .rear-mirror {
+  top: calc(var(--ui-pad) + var(--safe-top, 0px));
+}
+html body main > .game-ui > .rear-mirror .mirror-view { border-radius: 7px; }
+
+/* 左侧灯光喇叭竖列：双闪 / 远光 / 喇叭 / 转向拨杆，键位标签放在按钮右侧，不再被屏幕左边截断 */
+/* 原样式用 --aux-size / --aux-gap / --aux-top 排列这一列，这里只改变量；桌面端原本为下方标签留的 18px 间距收回到 8px */
+html[data-orientation=landscape] body main > .game-ui {
+  --aux-size: 40px;
+  --aux-gap: 8px;
+  --aux-top: calc(50% - 104px);
+}
+html[data-orientation=landscape] body main > .game-ui > .road-light-controls,
+html[data-orientation=landscape] body main > .game-ui > .aux-controls {
+  left: calc(var(--ui-pad) + var(--safe-left, 0px));
+}
+html[data-orientation=landscape] body main .road-light-controls button {
+  min-width: var(--aux-size);
+  min-height: var(--aux-size);
+}
+html body main > .game-ui > .road-light-controls button,
+html body main > .game-ui > .aux-controls > button {
+  border-radius: var(--ui-radius);
+  box-shadow: none;
+}
+html[data-desktop='true'] body main > .game-ui .road-light-controls button::after,
+html[data-desktop='true'] body main > .game-ui .aux-controls > button::after,
+html[data-desktop='true'] body main > .game-ui .turn-stalk::after {
+  left: calc(100% + 8px);
+  top: 50%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ui-dim);
+  font: 700 10px/1 var(--ui-font);
+  letter-spacing: 0.6px;
+  text-shadow: var(--ui-shadow-text);
+  transform: translateY(-50%);
+}
+
+/* 特技按钮移到右侧中部竖排，键位作角标，不再压住方向盘 */
+html[data-orientation=landscape] body main > .game-ui > .stunt-buttons {
+  top: calc(50% - 46px);
+  right: calc(var(--ui-pad) + var(--safe-right, 0px));
+  left: auto;
+  bottom: auto;
+  width: auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--ui-gap);
+  transform: none;
+}
+html body main > .game-ui > .stunt-buttons button {
+  min-width: 96px;
+  height: var(--ui-btn-h);
+  min-height: var(--ui-btn-h);
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: var(--ui-glass);
+  box-shadow: none;
+  color: var(--ui-text);
+  font: italic 800 12px/1 var(--ui-font);
+  letter-spacing: 0.4px;
+}
+html body main > .game-ui > .stunt-buttons button:disabled {
+  color: var(--ui-faint);
+  background: rgba(7, 10, 16, 0.36);
+}
+html body main > .game-ui > .stunt-buttons button:not(:disabled) {
+  border-color: var(--ui-accent);
+  color: var(--ui-accent);
+}
+html[data-desktop='true'] body main > .game-ui .stunt-buttons button::after {
+  left: auto;
+  right: -6px;
+  top: -6px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  box-sizing: border-box;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 4px;
+  background: var(--ui-surface);
+  color: var(--ui-dim);
+  font: 700 9px/13px var(--ui-font);
+  font-style: normal;
+  text-align: center;
+  transform: none;
+}
+
+/* 底部中央车速：大号斜体数字 */
+html body main > .game-ui > footer > .speed {
+  text-shadow: var(--ui-shadow-text);
+}
+html body main > .game-ui > footer > .speed strong {
+  color: var(--ui-text);
+  font: italic 900 44px/1 var(--ui-font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+html body main > .game-ui > footer > .speed span {
+  color: var(--ui-dim);
+  font: 700 10px/1.4 var(--ui-font);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+/* 左下方向键 */
+html body main > .game-ui .mobile-controls .turn-buttons button {
+  border: 1px solid var(--ui-line);
+  border-radius: 12px;
+  background: var(--ui-glass);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: none;
+  color: var(--ui-text);
+  font-size: 22px;
+}
+html body main > .game-ui .mobile-controls .turn-buttons button[aria-pressed='true'] {
+  border-color: var(--ui-accent);
+  background: rgba(0, 229, 255, 0.16);
+  color: var(--ui-accent);
+}
+
+/* 右下氮气：细条 + 读数，开启时整块变橙 */
+html body main > .game-ui .nos-boost-button {
+  justify-content: space-between;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 122, 26, 0.55);
+  border-radius: 8px;
+  background: var(--ui-glass);
+  box-shadow: none;
+  color: var(--ui-nos);
+  font: italic 800 12px/1 var(--ui-font);
+  letter-spacing: 1.2px;
+}
+html body main > .game-ui .nos-boost-button span {
+  color: var(--ui-text);
+  font-variant-numeric: tabular-nums;
+}
+html body main > .game-ui .nos-boost-button:hover:not(:disabled) {
+  border-color: var(--ui-nos);
+  background: var(--ui-glass-hover);
+}
+html body main > .game-ui .nos-boost-control[data-active='true'] .nos-boost-button {
+  border-color: var(--ui-nos);
+  background: var(--ui-nos);
+  box-shadow: none;
+  color: #120700;
+  transform: none;
+}
+html body main > .game-ui .nos-boost-control[data-active='true'] .nos-boost-button span { color: #120700; }
+html body main > .game-ui .nos-boost-control[data-low='true'] .nos-boost-button { border-color: var(--ui-line); color: var(--ui-faint); }
+html body main > .game-ui .nos-energy {
+  height: 3px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.14);
+}
+html body main > .game-ui .nos-energy i {
+  border-radius: 2px;
+  background: var(--ui-nos);
+}
+
+/* 踏板文字标签 */
+html body main > .game-ui .mobile-controls .pedal-label {
+  color: var(--ui-dim);
+  font: 700 10px/1.4 var(--ui-font);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  text-shadow: var(--ui-shadow-text);
+}
+
+/* 后视镜下方键位提示条与顶部提示气泡 */
+html[data-desktop='true'] body main[data-mode] .desktop-key-help {
+  border: 1px solid var(--ui-line);
+  border-radius: 6px;
+  background: var(--ui-glass);
+  box-shadow: none;
+  color: var(--ui-dim);
+  font: 600 11px/1.35 var(--ui-font);
+}
+html body main > .game-ui > .message {
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: rgba(7, 10, 16, 0.82);
+  box-shadow: none;
+  color: var(--ui-text);
+  font-family: var(--ui-font);
+  font-weight: 700;
+}
+
+/* 新手引导卡片 */
+html body .horizon-tutorial-card {
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 12px;
+  background: rgba(8, 11, 18, 0.9);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  font-family: var(--ui-font);
+}
+html body .horizon-tutorial-card.is-step-complete {
+  border-color: var(--ui-ok);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+html body .horizon-tutorial-card .tutorial-academy-pill {
+  border-radius: 4px;
+  background: var(--ui-accent);
+}
+
+/* ==================== 3. 单局结算面板 ==================== */
+/* 结算时隐藏驾驶操作件，面板外加一圈压暗，顶栏车库 / 设置保持可点 */
+html body main[data-mode=ended] > .game-ui > .mobile-controls,
+html body main[data-mode=ended] > .game-ui > .gear-controls,
+html body main[data-mode=ended] > .game-ui > .stunt-buttons,
+html body main[data-mode=ended] > .game-ui > .aux-controls,
+html body main[data-mode=ended] > .game-ui > .road-light-controls,
+html body main[data-mode=ended] > .game-ui > .player-turn-arrows,
+html body main[data-mode=ended] > .game-ui > .emote-controls,
+html body main[data-mode=ended] > .game-ui > .reverse-view-button,
+html body main[data-mode=ended] > .game-ui > .control-tools,
+html body main[data-mode=ended] > .game-ui > footer,
+html body main[data-mode=ended] > .game-ui > aside {
+  visibility: hidden;
+}
+html body main > .game-ui > .panel.run-ended-panel {
+  top: 50%;
+  width: min(420px, calc(100% - 32px));
+  max-width: none;
+  padding: 22px 24px 20px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 14px;
+  background: var(--ui-surface);
+  box-shadow: 0 0 0 100vmax rgba(3, 5, 9, 0.55), 0 24px 60px rgba(0, 0, 0, 0.6);
+  color: var(--ui-text);
+  font-family: var(--ui-font);
+  text-align: left;
+}
+html body main > .game-ui > .panel.run-ended-panel h2 {
+  margin: 0 0 4px;
+  color: var(--ui-text);
+  font: italic 900 30px/1.1 var(--ui-font);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-new-record-banner {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--ui-gold);
+  box-shadow: none;
+  color: #1a1200;
+  font: 800 10px/1.2 var(--ui-font);
+  letter-spacing: 1.2px;
+  animation: none;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-summary-box { margin: 14px 0 16px; gap: 12px; }
+html body main > .game-ui > .panel.run-ended-panel .run-summary-grid { gap: 0; }
+html body main > .game-ui > .panel.run-ended-panel .run-stat-card {
+  align-items: flex-start;
+  padding: 0 12px;
+  border: 0;
+  border-left: 1px solid var(--ui-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-stat-card:first-child { padding-left: 0; border-left: 0; }
+html body main > .game-ui > .panel.run-ended-panel .run-stat-label {
+  color: var(--ui-dim);
+  font-size: 10px;
+  letter-spacing: 1.4px;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-stat-val {
+  color: var(--ui-text);
+  font: italic 900 24px/1.1 var(--ui-font);
+  font-variant-numeric: tabular-nums;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-stat-val small {
+  color: var(--ui-dim);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-stat-card.is-record .run-stat-val { color: var(--ui-gold); }
+html body main > .game-ui > .panel.run-ended-panel .run-stat-best {
+  color: var(--ui-faint);
+  font-size: 10px;
+  font-style: normal;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-stat-card.is-record .run-stat-best { color: var(--ui-gold); }
+html body main > .game-ui > .panel.run-ended-panel .run-wallet-bar {
+  padding: 10px 0 0;
+  border: 0;
+  border-top: 1px solid var(--ui-line);
+  border-radius: 0;
+  background: none;
+  color: var(--ui-dim);
+  font-size: 11px;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-wallet-bar b {
+  color: var(--ui-gold);
+  font: italic 800 15px/1 var(--ui-font);
+}
+html body main > .game-ui > .panel.run-ended-panel .run-ended-actions { gap: 8px; margin-top: 0; }
+html body main > .game-ui > .panel.run-ended-panel .run-ended-actions button {
+  flex: 1;
+  min-height: 42px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: var(--ui-radius);
+  box-shadow: none;
+  font: italic 800 13px/1 var(--ui-font);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  transform: none;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-ended-actions .start {
+  border: 1px solid var(--ui-accent);
+  background: var(--ui-accent);
+  color: #001418;
+}
+html body main > .game-ui > .panel.run-ended-panel .run-ended-actions .start:hover { background: #5af0ff; }
+html body main > .game-ui > .panel.run-ended-panel .run-ended-actions .choose-mode-again {
+  display: block;
+  border: 1px solid var(--ui-line-strong);
+  background: transparent;
+  color: var(--ui-text);
+}
+html body main > .game-ui > .panel.run-ended-panel .run-ended-actions .choose-mode-again:hover { border-color: var(--ui-text); }
+
+/* ==================== 4. 车库与设置弹窗 ==================== */
+html body .garage-overlay,
+html body .game-settings-overlay {
+  background: rgba(3, 5, 9, 0.72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  font-family: var(--ui-font);
+}
+html body .garage-panel,
+html body .game-settings-panel {
+  border: 1px solid var(--ui-line);
+  border-radius: 14px;
+  background: var(--ui-surface);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+html body .garage-heading { background: linear-gradient(rgba(12, 16, 24, 0.9), transparent); }
+html body .garage-heading h2,
+html body .game-settings-panel h2 {
+  color: var(--ui-text);
+  font: italic 900 18px/1 var(--ui-font);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+html body .garage-heading button,
+html body .game-settings-panel header button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--ui-line);
+  border-radius: 8px;
+  background: var(--ui-surface-2);
+  color: var(--ui-text);
+}
+html body .garage-heading button:hover,
+html body .game-settings-panel header button:hover { border-color: var(--ui-line-strong); }
+html body .garage-wallet {
+  border: 1px solid var(--ui-line);
+  border-radius: 6px;
+  background: var(--ui-surface-2);
+  box-shadow: none;
+}
+html body .garage-wallet b { color: var(--ui-gold); font-style: italic; text-shadow: none; }
+
+/* 车库 3D 舞台：底部加一道地面渐变，避免车辆悬在纯黑里 */
+html body .garage-stage {
+  background: radial-gradient(120% 70% at 50% 100%, #1a2232 0%, #0c1018 70%);
+}
+html body .garage-drag-hint { color: var(--ui-faint); font-size: 10px; letter-spacing: 1.6px; }
+html body .garage-records-bar {
+  border: 0;
+  border-top: 1px solid var(--ui-line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html body .garage-record-item { border-right-color: var(--ui-line); }
+html body .garage-record-label { color: var(--ui-dim); font-size: 10px; letter-spacing: 1.2px; }
+html body .garage-record-val { color: var(--ui-text); font: italic 800 14px/1.15 var(--ui-font); text-shadow: none; }
+
+html body .garage-options { border-bottom-color: var(--ui-line); }
+html body .garage-options button { color: var(--ui-dim); font: 700 12px var(--ui-font); }
+html body .garage-options button small { color: var(--ui-faint); font-style: italic; font-weight: 800; }
+html body .garage-options button[aria-pressed='true'] { border-bottom-color: var(--ui-accent); color: var(--ui-text); }
+html body .garage-options button[aria-pressed='true'] small { color: var(--ui-accent); }
+html body .garage-car h3 { font: italic 900 22px/1.15 var(--ui-font); letter-spacing: 0.4px; text-transform: uppercase; }
+html body .garage-car p { color: var(--ui-dim); }
+html body .garage-perk-badge {
+  border: 0;
+  border-left: 2px solid var(--spec-accent);
+  border-radius: 0;
+  background: none;
+  padding: 2px 0 2px 10px;
+}
+html body .garage-perk-role { border-radius: 4px; }
+html body .garage-stats-grid {
+  padding: 0;
+  border: 0;
+  background: none;
+  gap: 10px 14px;
+}
+html body .garage-stat-label { color: var(--ui-dim); font-size: 10px; letter-spacing: 0.6px; }
+html body .garage-stat-label b { color: var(--ui-text); font-style: italic; }
+html body .garage-stat-bar { height: 3px; background: rgba(255, 255, 255, 0.1); }
+html body .garage-stat-bar i,
+html body .garage-specs[data-spec-vehicle] .garage-stat-bar i {
+  background: var(--spec-accent);
+  box-shadow: none;
+}
+html body .garage-paint-workshop,
+html body .garage-unlock {
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: none;
+  box-shadow: none;
+}
+html body .garage-unlock[data-owned='false'] { border-color: rgba(255, 122, 26, 0.45); }
+html body .garage-paint-action { border-radius: 6px; box-shadow: none; }
+html body .garage-unlock-bar { height: 3px; background: rgba(255, 255, 255, 0.1); }
+html body .garage-unlock-bar i { background: var(--ui-nos); box-shadow: none; }
+
+/* 主按钮统一为实心电光青，次要按钮为描边 */
+html body .garage-confirm,
+html body .game-settings-done {
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--ui-radius);
+  background: var(--ui-accent);
+  box-shadow: none;
+  color: #001418;
+  font: italic 900 14px/1 var(--ui-font);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+html body .garage-confirm:hover,
+html body .game-settings-done:hover { background: #5af0ff; }
+html body .garage-confirm[data-state='unlock'],
+html body .garage-confirm[data-state='armed'] { background: var(--ui-nos); color: #140800; }
+html body .garage-confirm[data-state='locked'] { background: var(--ui-surface-2); color: var(--ui-dim); }
+
+html body .preference-row + .preference-row {
+  margin-top: 0;
+  border-top: 1px solid var(--ui-line);
+}
+html body .preference-row { min-height: 48px; }
+html body .preference-row > span,
+html body .music-volume-row label { color: var(--ui-dim); font-size: 12px; font-weight: 600; }
+html body .preference-row button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ui-dim);
+  font-size: 12px;
+  font-weight: 600;
+}
+html body .preference-row button:hover { border-color: var(--ui-line-strong); color: var(--ui-text); }
+html body .preference-row button[aria-pressed='true'] {
+  border-color: var(--ui-accent);
+  background: var(--ui-accent);
+  color: #001418;
+  font-weight: 800;
+}
+html body .tutorial-preference-row .tutorial-replay-btn {
+  border-color: var(--ui-line-strong);
+  background: transparent;
+  color: var(--ui-text);
+}
+html body .music-volume-row output { color: var(--ui-text); font-style: italic; font-weight: 800; }
+
+/* ==================== 5. 启动加载页 ==================== */
+html body .boot-screen {
+  background: radial-gradient(90% 70% at 50% 40%, #121826 0%, #06080d 80%);
+  font-family: var(--ui-font);
+}
+html body .boot-screen::before { display: none; }
+html body .boot-content { max-width: none; width: auto; padding: 24px; }
+html body .boot-kicker {
+  margin-bottom: 22px;
+  color: var(--ui-dim);
+  font-size: 10px;
+  letter-spacing: 4px;
+}
+html body .boot-scene {
+  border: 1px solid var(--ui-line);
+  border-radius: 12px;
+  box-shadow: none;
+}
+html body .boot-sun { box-shadow: none; }
+html body .boot-road { box-shadow: none; }
+html body .boot-car { box-shadow: none; }
+/* 标题改为纯色实字：原渐变裁剪文字在 400px 容器外的部分会变透明，导致显示成 "HORIZON OVERD" */
+html body .boot-screen h1 {
+  margin: 0 0 8px;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  color: var(--ui-text);
+  font: italic 900 clamp(26px, 5.2vw, 44px)/1.05 var(--ui-font);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+html body .boot-tagline { color: var(--ui-dim); font-size: 12px; letter-spacing: 1.4px; }
+html body .boot-status { margin-top: 26px; }
+html body .boot-track {
+  width: 220px;
+  height: 2px;
+  margin: 0 auto 12px;
+  border: 0;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+}
+html body .boot-track i { background: var(--ui-accent); box-shadow: none; }
+html body #boot-message { color: var(--ui-faint); font-size: 11px; letter-spacing: 0.6px; }
