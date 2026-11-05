@@ -514,6 +514,17 @@ html body .horizon-tutorial-card .tutorial-academy-pill {
 
 /* ==================== 3. 单局结算面板 ==================== */
 /* 结算时隐藏驾驶操作件，面板外加一圈压暗，顶栏车库 / 设置保持可点 */
+html body main[data-mode=ready] > .game-ui > .mobile-controls,
+html body main[data-mode=ready] > .game-ui > .gear-controls,
+html body main[data-mode=ready] > .game-ui > .stunt-buttons,
+html body main[data-mode=ready] > .game-ui > .aux-controls,
+html body main[data-mode=ready] > .game-ui > .road-light-controls,
+html body main[data-mode=ready] > .game-ui > .player-turn-arrows,
+html body main[data-mode=ready] > .game-ui > .emote-controls,
+html body main[data-mode=ready] > .game-ui > .reverse-view-button,
+html body main[data-mode=ready] > .game-ui > .control-tools,
+html body main[data-mode=ready] > .game-ui > footer,
+html body main[data-mode=ready] > .game-ui > aside,
 html body main[data-mode=ended] > .game-ui > .mobile-controls,
 html body main[data-mode=ended] > .game-ui > .gear-controls,
 html body main[data-mode=ended] > .game-ui > .stunt-buttons,
@@ -527,6 +538,7 @@ html body main[data-mode=ended] > .game-ui > footer,
 html body main[data-mode=ended] > .game-ui > aside {
   visibility: hidden;
 }
+html body main > .game-ui > .panel.run-ready-panel,
 html body main > .game-ui > .panel.run-ended-panel {
   top: 50%;
   width: min(420px, calc(100% - 32px));
@@ -540,6 +552,7 @@ html body main > .game-ui > .panel.run-ended-panel {
   font-family: var(--ui-font);
   text-align: left;
 }
+html body main > .game-ui > .panel.run-ready-panel h2,
 html body main > .game-ui > .panel.run-ended-panel h2 {
   margin: 0 0 4px;
   color: var(--ui-text);
@@ -608,7 +621,9 @@ html body main > .game-ui > .panel.run-ended-panel .run-wallet-bar b {
   color: var(--ui-gold);
   font: italic 800 15px/1 var(--ui-font);
 }
+html body main > .game-ui > .panel.run-ready-panel .run-ended-actions,
 html body main > .game-ui > .panel.run-ended-panel .run-ended-actions { gap: 8px; margin-top: 0; }
+html body main > .game-ui > .panel.run-ready-panel .run-ended-actions button,
 html body main > .game-ui > .panel.run-ended-panel .run-ended-actions button {
   flex: 1;
   min-height: 42px;
@@ -621,19 +636,33 @@ html body main > .game-ui > .panel.run-ended-panel .run-ended-actions button {
   text-transform: uppercase;
   transform: none;
 }
+html body main > .game-ui > .panel.run-ready-panel .run-ended-actions .start,
 html body main > .game-ui > .panel.run-ended-panel .run-ended-actions .start {
   border: 1px solid var(--ui-accent);
   background: var(--ui-accent);
   color: #001418;
 }
+html body main > .game-ui > .panel.run-ready-panel .run-ended-actions .start:hover,
 html body main > .game-ui > .panel.run-ended-panel .run-ended-actions .start:hover { background: #5af0ff; }
+html body main > .game-ui > .panel.run-ready-panel .run-ended-actions .choose-mode-again,
 html body main > .game-ui > .panel.run-ended-panel .run-ended-actions .choose-mode-again {
   display: block;
   border: 1px solid var(--ui-line-strong);
   background: transparent;
   color: var(--ui-text);
 }
+html body main > .game-ui > .panel.run-ready-panel .run-ended-actions .choose-mode-again:hover,
 html body main > .game-ui > .panel.run-ended-panel .run-ended-actions .choose-mode-again:hover { border-color: var(--ui-text); }
+
+/* 老玩家开始界面：复用结算面板外观，标题下方为操作说明 */
+html body main > .game-ui > .panel.run-ready-panel h2 { margin-bottom: 12px; }
+html body main > .game-ui > .panel.run-ready-panel > p {
+  margin: 0 0 18px;
+  color: var(--ui-dim);
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: 1;
+}
 
 /* ==================== 4. 车库与设置弹窗 ==================== */
 html body .garage-overlay,

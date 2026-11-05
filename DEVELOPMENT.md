@@ -733,3 +733,12 @@ python server.py
 
 3. **存档**：字段 `upgrade.<vehicle>_<stat>` 为 0 ~ 3 的整数，按“只取最大值”合并（与 `records.*` 相同），跨标签页或云存档同步时等级不会回退；`HorizonDriveWallet.purchaseUpgrade(vehicle, stat)` 在 `commit` 回调中读改写扣费，`reason` 取值 `purchased` / `max` / `vehicle_locked` / `insufficient` / `unknown`。
 4. **车库界面**：涂装工坊下方新增 `.garage-upgrades` 面板（`paintUpgrades()` 渲染），每项显示名称、效果说明、3 格等级刻度与购买按钮；按钮状态 `unlock` → `armed`（再次点击确认，`3.5s` 超时撤销）→ 扣费升级，`locked` / `vehicle-locked` 抖动提示，`max` 显示已满级。
+
+## 二十七、老玩家开始界面（符合 CrazyGames「新玩家直接进入玩法」要求）
+
+CrazyGames [玩法要求](https://docs.crazygames.com/requirements/gameplay/)（完整接入强制）规定新玩家加载后必须直接进入玩法，确实做不到时最多允许 1 次点击。因此开始界面只对老玩家显示：
+
+- **判定**：[`drive.js`](file:///d:/AI项目集合/赛车游戏/assets/js/drive.js) `__hdHoldStart()` 读取存档 `tutorial.completed`（完成或跳过过新手引导即为老玩家）。
+- **新玩家**：加载完成后照旧直接 `start()`，同时自动开启新手引导。
+- **老玩家**：加载完成后停在 `ready` 状态，复用原有准备面板（`.panel.run-ready-panel`，标题、操作说明、「出发！」与「车库与涂装」按钮），点击「出发！」才开跑；开始界面期间隐藏驾驶操作件（[`arcade-ui.css`](file:///d:/AI项目集合/赛车游戏/assets/css/arcade-ui.css)）。
+- **只拦截一次**：任意一次 `start()` 都会清除 `__hdHoldPending`，本页会话内之后从车库换车重新挂载场景时照常直接开跑，不会反复多点一下。
