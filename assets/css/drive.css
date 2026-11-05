@@ -3455,6 +3455,102 @@ html[data-desktop=true][data-vehicle=motorcycle] .nos-boost-control {
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
 }
 
+/* ==================== 局内热度系统：HUD 热度徽章、耐久分格与屏幕边缘热度光效 ==================== */
+.horizon-heat-badge {
+  --heat-color: #38bdf8;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--heat-color);
+}
+.horizon-heat-badge[data-level="2"] { --heat-color: #a3e635; }
+.horizon-heat-badge[data-level="3"] { --heat-color: #facc15; }
+.horizon-heat-badge[data-level="4"] { --heat-color: #fb923c; }
+.horizon-heat-badge[data-level="5"] { --heat-color: #f43f5e; }
+.horizon-heat-badge span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.horizon-heat-badge b {
+  font-variant-numeric: tabular-nums;
+}
+.horizon-heat-badge em {
+  margin-left: auto;
+  font-style: normal;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: #0f172a;
+  background: var(--heat-color);
+  font-variant-numeric: tabular-nums;
+}
+.horizon-heat-badge i {
+  display: block;
+  height: 3px;
+  margin-top: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+}
+.horizon-heat-badge u {
+  display: block;
+  height: 100%;
+  background: var(--heat-color);
+  transition: width 0.2s linear;
+}
+.horizon-heat-badge[data-level="5"] {
+  animation: hd-heat-pulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes hd-heat-pulse {
+  from { text-shadow: 0 0 0 transparent; }
+  to { text-shadow: 0 0 8px rgba(244, 63, 94, 0.85); }
+}
+
+/* 耐久分格：每格代表一次可承受的撞击 */
+.integrity-bar.is-pips {
+  display: flex;
+  gap: 3px;
+  background: transparent;
+  overflow: visible;
+}
+.integrity-bar.is-pips i {
+  flex: 1;
+  height: 100%;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  transition: background-color 0.2s ease;
+}
+
+/* 屏幕边缘热度光效：位于 3D 场景之上、HUD 之下，不拦截任何点击 */
+.horizon-heat-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease, box-shadow 0.6s ease;
+}
+.horizon-heat-vignette[data-level="2"] { opacity: 1; box-shadow: inset 0 0 60px rgba(163, 230, 53, 0.16); }
+.horizon-heat-vignette[data-level="3"] { opacity: 1; box-shadow: inset 0 0 80px rgba(250, 204, 21, 0.22); }
+.horizon-heat-vignette[data-level="4"] { opacity: 1; box-shadow: inset 0 0 100px rgba(251, 146, 60, 0.28); }
+.horizon-heat-vignette[data-level="5"] {
+  opacity: 1;
+  box-shadow: inset 0 0 120px rgba(244, 63, 94, 0.36);
+  animation: hd-heat-edge 1.2s ease-in-out infinite alternate;
+}
+@keyframes hd-heat-edge {
+  from { box-shadow: inset 0 0 100px rgba(244, 63, 94, 0.26); }
+  to { box-shadow: inset 0 0 140px rgba(244, 63, 94, 0.42); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .horizon-heat-badge[data-level="5"],
+  .horizon-heat-vignette[data-level="5"] {
+    animation: none;
+  }
+}
+
 /* ==================== CrazyGames 直进模式：游戏内顶栏快捷操作组（换车 & 设置） ==================== */
 .home-return-button.hud-quick-actions {
   display: inline-flex;

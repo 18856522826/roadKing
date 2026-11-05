@@ -285,6 +285,61 @@ html body main > .game-ui > aside .integrity-bar i {
   background: var(--ui-ok);
   box-shadow: none;
 }
+/* 局内热度徽章（街机极简风）：行程卡片右上角紧凑小卡（与里程数字同行），不占用纵向空间，避免挤压耐久条与路口提示框 */
+html body main > .game-ui > aside .horizon-heat-badge {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  width: 54px;
+  margin: 0;
+  padding: 3px 5px 4px;
+  border: 1px solid var(--heat-color);
+  border-radius: 6px;
+  background: rgba(3, 5, 9, 0.38);
+  font: 700 10px/1 var(--ui-font);
+  letter-spacing: 0;
+  text-shadow: none;
+  box-sizing: border-box;
+}
+html body main > .game-ui > aside .horizon-heat-badge span {
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 2px;
+}
+html body main > .game-ui > aside .horizon-heat-badge small {
+  flex-basis: 100%;
+  margin-bottom: 2px;
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  opacity: 0.85;
+}
+html body main > .game-ui > aside .horizon-heat-badge b {
+  font: italic 800 13px/1 var(--ui-font);
+}
+html body main > .game-ui > aside .horizon-heat-badge em {
+  margin-left: auto;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-size: 9px;
+}
+html body main > .game-ui > aside .horizon-heat-badge i {
+  height: 2px;
+  margin-top: 3px;
+  border-radius: 1px;
+}
+/* 耐久分格：覆盖街机风对 .integrity-bar i 的统一绿色背景 */
+html body main > .game-ui > aside .integrity-bar.is-pips {
+  display: flex;
+  gap: 3px;
+  background: transparent;
+  overflow: visible;
+}
+html body main > .game-ui > aside .integrity-bar.is-pips i {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.14);
+}
 html[data-orientation=landscape] body main > .game-ui > .junction-status {
   top: calc(var(--ui-pad) + var(--safe-top, 0px) + 96px);
   left: calc(var(--ui-pad) + var(--safe-left, 0px));
