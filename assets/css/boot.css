@@ -1346,6 +1346,82 @@ html[data-orientation='landscape'] .mode-caption {
   color: #ffffff;
 }
 
+/* ---------- 6.3 性能升级面板 (.garage-upgrades)：氮气 / 操控 / 护甲 各 3 级 ---------- */
+.garage-upgrades {
+  margin: 0 0 11px;
+  padding: 9px 12px 10px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+.garage-upgrades-title {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #94a3b8;
+}
+.garage-upgrade-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+.garage-upgrade-row + .garage-upgrade-row { border-top: 1px solid rgba(148, 163, 184, 0.14); }
+.garage-upgrade-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.garage-upgrade-info b { font-size: 12.5px; color: #f8fafc; white-space: nowrap; }
+.garage-upgrade-info small {
+  font-size: 11px;
+  line-height: 1.35;
+  color: #94a3b8;
+}
+.garage-upgrade-pips { display: flex; gap: 3px; }
+.garage-upgrade-pips i {
+  width: 14px;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(148, 163, 184, 0.25);
+}
+.garage-upgrade-pips i.on { background: var(--spec-accent, #00e5ff); }
+.garage-upgrade-buy {
+  min-width: 96px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(30, 41, 59, 0.9);
+  color: #cbd5e1;
+  font: 700 11px/1.2 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.garage-upgrade-buy[data-upgrade-state='unlock'] {
+  border-color: #ffb74d;
+  background: #ff7a1a;
+  color: #1a0b00;
+}
+.garage-upgrade-buy[data-upgrade-state='armed'] {
+  border-color: #ff9e40;
+  background: #ff3d00;
+  color: #ffffff;
+  animation: garage-armed-pulse 0.9s ease-in-out infinite;
+}
+.garage-upgrade-buy[data-upgrade-state='max'] {
+  border-color: rgba(52, 211, 153, 0.45);
+  background: rgba(16, 185, 129, 0.16);
+  color: #6ee7b7;
+  cursor: default;
+}
+.garage-upgrade-buy[data-upgrade-state='locked'],
+.garage-upgrade-buy[data-upgrade-state='vehicle-locked'] {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(30, 41, 59, 0.65);
+  color: #64748b;
+  cursor: not-allowed;
+}
+.garage-upgrade-buy.garage-shake { animation: garage-shake 0.4s ease; }
+
 html[data-orientation='landscape'] .garage-panel { width: 920px; }
 html[data-orientation='landscape'] .garage-body {
   display: grid;

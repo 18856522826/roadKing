@@ -12,6 +12,8 @@
  * 4. installLaunchDispatcher    : 异常启动兜底提示、CrazyGames SDK v3 桥接与首页“开始驾驶”事件派发器。
  * 5. installTutorialController  : 交互式新手教学引导系统 (window.HorizonTutorial)，基于 60fps 实时遥测与双端输入检测，
  *                                 提供 6 步非阻塞式实操驾驶训练、目标控件霓虹脉冲高亮、45s 单步超时保护与首次毕业 +1,000 PTS 奖励入账。
+ * 6. installAchievementController : 一次性成就奖励 (window.HorizonAchievements)，由 drive.js 上报惊险超车 / 撞飞 / 里程事件，
+ *                                 首次达成时经钱包 claimAchievement 发放积分并弹出达成提示。
  * ============================================================================
  */
 (function () {
@@ -30,12 +32,13 @@
     var WEATHER = ['storm', 'fog', 'snow'];
     // 全部载具 ID（顺序与车库列表一致）
     var VEHICLES = ['sedan', 'motorcycle', 'jet', 'truck'];
-    // 载具解锁价格（单位：积分，按约 20 分钟全收集周期标定：总计 60,000 积分）；价格为 0 的载具视为初始赠送、永久拥有
+    // 载具解锁价格（单位：积分，总计 50,000 积分）；价格为 0 的载具视为初始赠送、永久拥有
+    // 按约 3,000 PTS/分钟（含一次性成就奖励）标定：约第 1.3 / 6.3 / 16.3 分钟依次解锁，保证前 15 分钟每隔几分钟就有新座驾或新涂装
     var VEHICLE_PRICES = {
       sedan: 0,
-      motorcycle: 8000,
-      truck: 20000,
-      jet: 32000
+      motorcycle: 5000,
+      truck: 15000,
+      jet: 30000
     };
     /**
      * 四款座驾的专属定制涂装工坊配置表（每车 1 款免费原厂涂装 + 4 款积分解锁涂装）
@@ -44,33 +47,62 @@
     var VEHICLE_PAINTS = {
       sedan: [
         { id: 'stock', hex: '#2b7de9', price: 0, nameEn: 'Cobalt GT (Stock)', nameZh: '原厂钴蓝' },
-        { id: 'nitro', hex: '#ff5500', price: 2500, nameEn: 'Nitro Blaze', nameZh: '烈焰氮气橙' },
+        { id: 'nitro', hex: '#ff5500', price: 1000, nameEn: 'Nitro Blaze', nameZh: '烈焰氮气橙' },
         { id: 'emerald', hex: '#00e676', price: 5000, nameEn: 'Venom Emerald', nameZh: '赛博毒液绿' },
         { id: 'amethyst', hex: '#9d4edd', price: 8500, nameEn: 'Midnight Amethyst', nameZh: '幻夜紫罗兰' },
         { id: 'gold', hex: '#ffd000', price: 15000, nameEn: 'Apex Sovereign Gold', nameZh: '冠军流光金' }
       ],
       motorcycle: [
         { id: 'stock', hex: '#00d2ff', price: 0, nameEn: 'Cyber Cyan (Stock)', nameZh: '原厂霓虹青' },
-        { id: 'crimson', hex: '#ff1744', price: 2500, nameEn: 'Crimson Katana', nameZh: '赤红刀锋' },
+        { id: 'crimson', hex: '#ff1744', price: 1000, nameEn: 'Crimson Katana', nameZh: '赤红刀锋' },
         { id: 'lime', hex: '#aacc00', price: 5000, nameEn: 'Hyper Lime', nameZh: '荧光暴走绿' },
         { id: 'plasma', hex: '#e040fb', price: 8500, nameEn: 'Plasma Reactor', nameZh: '等离子星紫' },
         { id: 'aurum', hex: '#ffb703', price: 15000, nameEn: 'Aurum Phantom', nameZh: '曜金幻影' }
       ],
       truck: [
         { id: 'stock', hex: '#d62828', price: 0, nameEn: 'Vulcan Red (Stock)', nameZh: '原厂熔岩红' },
-        { id: 'desert', hex: '#e09f3e', price: 2500, nameEn: 'Sandstorm Tactical', nameZh: '荒漠风暴黄' },
+        { id: 'desert', hex: '#e09f3e', price: 1000, nameEn: 'Sandstorm Tactical', nameZh: '荒漠风暴黄' },
         { id: 'cobalt', hex: '#1d4ed8', price: 5000, nameEn: 'Aegis Cobalt', nameZh: '深海重甲蓝' },
         { id: 'obsidian', hex: '#334155', price: 8500, nameEn: 'Obsidian Stealth', nameZh: '黑曜石装甲' },
         { id: 'gilded', hex: '#f59e0b', price: 15000, nameEn: 'Gilded Juggernaut', nameZh: '黄金巨兽' }
       ],
       jet: [
         { id: 'stock', hex: '#dce8f5', price: 0, nameEn: 'Starlight Silver (Stock)', nameZh: '原厂星舰银' },
-        { id: 'ion', hex: '#00b4d8', price: 2500, nameEn: 'Ion Horizon', nameZh: '离子天穹蓝' },
+        { id: 'ion', hex: '#00b4d8', price: 1000, nameEn: 'Ion Horizon', nameZh: '离子天穹蓝' },
         { id: 'supernova', hex: '#ff3d00', price: 5000, nameEn: 'Supernova Flare', nameZh: '超新星赤焰' },
         { id: 'nebula', hex: '#a855f7', price: 8500, nameEn: 'Nebula Violet', nameZh: '星云暗物质' },
         { id: 'celestial', hex: '#ffbe0b', price: 15000, nameEn: 'Celestial Emperor', nameZh: '天穹帝皇金' }
       ]
     };
+    /**
+     * 一次性成就奖励（每项每个存档只发一次，合计 11,500 PTS），集中在前 15 分钟陆续触发，配合座驾价格制造持续的新鲜感：
+     * 惊险超车 / 连击 / 撞飞 / 钻缝 为第一次玩就能碰到的操作，单局里程逐级抬高门槛，新座驾首跑奖励鼓励换车体验不同玩法
+     */
+    var ACHIEVEMENTS = [
+      { id: 'near_miss_1', pts: 300, icon: '⚡', nameEn: 'First Near Miss', nameZh: '首次惊险超车' },
+      { id: 'takedown_1', pts: 500, icon: '💥', nameEn: 'First Takedown', nameZh: '首次撞飞车辆' },
+      { id: 'combo_3', pts: 500, icon: '🔥', nameEn: 'Near-Miss Combo ×3', nameZh: '惊险连击 ×3' },
+      { id: 'split_1', pts: 600, icon: '🗡️', nameEn: 'First Lane Split', nameZh: '首次钻缝穿越' },
+      { id: 'combo_5', pts: 1000, icon: '🌪️', nameEn: 'Near-Miss Combo ×5', nameZh: '惊险连击 ×5' },
+      { id: 'run_1km', pts: 300, icon: '🛣️', nameEn: 'Single Run: 1 km', nameZh: '单局跑满 1 公里' },
+      { id: 'run_3km', pts: 800, icon: '🛣️', nameEn: 'Single Run: 3 km', nameZh: '单局跑满 3 公里' },
+      { id: 'run_5km', pts: 1500, icon: '🏁', nameEn: 'Single Run: 5 km', nameZh: '单局跑满 5 公里' },
+      { id: 'run_10km', pts: 3000, icon: '🏆', nameEn: 'Single Run: 10 km', nameZh: '单局跑满 10 公里' },
+      { id: 'drive_motorcycle', pts: 1000, icon: '🏍️', nameEn: 'Phantom Bike: First 1 km', nameZh: '幻影重机首跑 1 公里' },
+      { id: 'drive_truck', pts: 1000, icon: '🚛', nameEn: 'Titan Truck: First 1 km', nameZh: '泰坦重卡首跑 1 公里' },
+      { id: 'drive_jet', pts: 1000, icon: '🚀', nameEn: 'Aether Jet: First 1 km', nameZh: '天穹飞车首跑 1 公里' }
+    ];
+    /**
+     * 座驾性能升级：每车 3 项 × 3 级，每级价格 2,000 / 4,000 / 8,000（单车满级 42,000，四车 168,000），
+     * 作为全车库解锁（约第 16 分钟）之后到第 60 分钟的主要积分出口；drive.js 通过 upgradeLevel() 按等级实时读取效果系数
+     */
+    var UPGRADES = [
+      { id: 'nos', icon: '🔥', nameEn: 'Nitro System', nameZh: '氮气系统', effectEn: 'Per level: −12% NOS burn, +20% passive recharge', effectZh: '每级：氮气消耗 −12%，自动回充 +20%' },
+      { id: 'handling', icon: '🎯', nameEn: 'Handling', nameZh: '操控', effectEn: 'Per level: +6% steering, +8% braking', effectZh: '每级：转向 +6%，刹车 +8%' },
+      { id: 'armor', icon: '🛡️', nameEn: 'Armor', nameZh: '护甲', effectEn: 'Per level: −10% crash damage', effectZh: '每级：碰撞伤害 −10%' }
+    ];
+    // 第 1 / 2 / 3 级的升级价格，数组长度即最高等级
+    var UPGRADE_PRICES = [2000, 4000, 8000];
     // 积分余额与累计积分的数值上限（防止异常数据溢出）
     var POINTS_MAX = 999999999;
     var DEFAULTS = {
@@ -105,7 +137,13 @@
       DEFAULTS['unlocks.' + k] = true;
     });
     // 载具拥有状态与定制涂装默认状态：免费载具及原厂涂装默认拥有，付费项需消耗积分解锁
+    ACHIEVEMENTS.forEach(function (a) {
+      DEFAULTS['achv.' + a.id] = false;
+    });
     VEHICLES.forEach(function (id) {
+      UPGRADES.forEach(function (u) {
+        DEFAULTS['upgrade.' + id + '_' + u.id] = 0;
+      });
       DEFAULTS['owned.' + id] = VEHICLE_PRICES[id] === 0;
       DEFAULTS['paint.' + id] = 'stock';
       (VEHICLE_PAINTS[id] || []).forEach(function (p) {
@@ -159,6 +197,11 @@
       if (k === 'audio.bgmVolume') return numeric(v, 0, 100);
       if (k === 'mods.target') return numeric(v, 0, 9999);
       if (k === 'mods.rampInterval') return numeric(v, 200, 2000);
+      if (k.indexOf('upgrade.') === 0) {
+        // 升级等级为 0 ~ 最高等级的整数
+        var lv = numeric(v, 0, UPGRADE_PRICES.length);
+        return lv === void 0 ? void 0 : Math.floor(lv);
+      }
       if (k.indexOf('progress.') === 0 || k.indexOf('records.') === 0) {
         // 积分与生涯最高纪录必须为非负整数
         var pts = numeric(v, 0, POINTS_MAX);
@@ -173,7 +216,7 @@
         }
         return void 0;
       }
-      if (k.indexOf('mods.on.') === 0 || k.indexOf('unlocks.') === 0 || k.indexOf('owned.') === 0 || k.indexOf('paintOwned.') === 0 || k.indexOf('tutorial.') === 0) {
+      if (k.indexOf('mods.on.') === 0 || k.indexOf('unlocks.') === 0 || k.indexOf('owned.') === 0 || k.indexOf('paintOwned.') === 0 || k.indexOf('tutorial.') === 0 || k.indexOf('achv.') === 0) {
         return typeof v === 'boolean' ? v : void 0;
       }
       if (k.indexOf('controlLayout.') === 0) {
@@ -255,16 +298,16 @@
     }
     /**
      * 判断字段是否为“只能由 false 变 true”的单调解锁字段
-     * （功能解锁 unlocks.*、载具拥有 owned.*、涂装拥有 paintOwned.*、新手引导完成状态 tutorial.completed 与首次奖励 tutorial.rewarded），跨标签页或云存档合并时一旦解锁永不回退
+     * （功能解锁 unlocks.*、载具拥有 owned.*、涂装拥有 paintOwned.*、成就领取 achv.*、新手引导完成状态 tutorial.completed 与首次奖励 tutorial.rewarded），跨标签页或云存档合并时一旦解锁永不回退
      */
     function isMonotonic(k) {
-      return k.indexOf('unlocks.') === 0 || k.indexOf('owned.') === 0 || k.indexOf('paintOwned.') === 0 || k === 'tutorial.rewarded' || k === 'tutorial.completed';
+      return k.indexOf('unlocks.') === 0 || k.indexOf('owned.') === 0 || k.indexOf('paintOwned.') === 0 || k.indexOf('achv.') === 0 || k === 'tutorial.rewarded' || k === 'tutorial.completed';
     }
     /**
-     * 判断字段是否为“只取最大值”的高水位累计/纪录字段（records.* 与历史累计总积分 progress.earned），防止旧标签页或新会话低数值覆盖历史最高纪录
+     * 判断字段是否为“只取最大值”的高水位累计/纪录字段（records.*、升级等级 upgrade.* 与历史累计总积分 progress.earned），防止旧标签页或新会话低数值覆盖历史最高纪录
      */
     function isMaxMonotonic(k) {
-      return k.indexOf('records.') === 0 || k === 'progress.earned';
+      return k.indexOf('records.') === 0 || k.indexOf('upgrade.') === 0 || k === 'progress.earned';
     }
 
     function mergeRaw(raw) {
@@ -612,6 +655,31 @@
     }
 
     /**
+     * 领取一次性成就奖励：读改写在 commit 回调中完成，多标签页同时触发也只会发放一次
+     * @param {string} id 成就 ID
+     * @returns {{id:string, pts:number, icon:string, nameEn:string, nameZh:string}|null} 本次新领取的成就定义；已领取或未知 ID 返回 null
+     */
+    function claimAchievement(id) {
+      var def = null;
+      for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+        if (ACHIEVEMENTS[i].id === id) def = ACHIEVEMENTS[i];
+      }
+      if (!def) return null;
+      var claimed = false;
+      commit(function () {
+        if (value('achv.' + id) === true) return {};
+        claimed = true;
+        var patch = {};
+        patch['achv.' + id] = true;
+        return patch;
+      }, 'achievement');
+      if (!claimed) return null;
+      earn(def.pts);
+      flushPendingPoints();
+      return copy(def);
+    }
+
+    /**
      * 消耗积分解锁指定载具
      * 读改写在 commit 的回调中完成，确保基于“合并其它标签页后”的最新余额计算，避免多开页面重复扣费 / 透支
      * @param {string} id 载具 ID
@@ -780,6 +848,72 @@
       return result;
     }
 
+    function findUpgradeDef(stat) {
+      for (var i = 0; i < UPGRADES.length; i++) {
+        if (UPGRADES[i].id === stat) return UPGRADES[i];
+      }
+      return null;
+    }
+
+    /**
+     * 某座驾某项升级的当前等级（0 ~ UPGRADE_PRICES.length），未知座驾或升级项返回 0
+     */
+    function upgradeLevel(vehicleId, stat) {
+      if (!own(VEHICLE_PRICES, vehicleId) || !findUpgradeDef(stat)) return 0;
+      return value('upgrade.' + vehicleId + '_' + stat) || 0;
+    }
+
+    /**
+     * 某座驾全部升级项的展示数据（含当前等级、下一级价格；已满级时 nextPrice 为 null）
+     */
+    function upgradesFor(vehicleId) {
+      return UPGRADES.map(function (u) {
+        var out = copy(u);
+        out.level = upgradeLevel(vehicleId, u.id);
+        out.maxLevel = UPGRADE_PRICES.length;
+        out.nextPrice = out.level < out.maxLevel ? UPGRADE_PRICES[out.level] : null;
+        return out;
+      });
+    }
+
+    /**
+     * 消耗积分将某座驾某项升级提升 1 级；读改写在 commit 回调中完成，避免多开页面重复扣费
+     * @returns {{ok:boolean, reason:string, vehicle:string, stat:string, level:number, price:number, points:number, shortfall:number}}
+     *          reason 取值 purchased / max / vehicle_locked / insufficient / unknown
+     */
+    function purchaseUpgrade(vehicleId, stat) {
+      if (!own(VEHICLE_PRICES, vehicleId) || !findUpgradeDef(stat)) {
+        return { ok: false, reason: 'unknown', vehicle: vehicleId, stat: stat, level: 0, price: 0, points: balance(), shortfall: 0 };
+      }
+      flushPendingPoints();
+      var result = null;
+      commit(function () {
+        var key = 'upgrade.' + vehicleId + '_' + stat;
+        var level = value(key) || 0;
+        var points = value('progress.points');
+        if (!isOwned(vehicleId)) {
+          result = { ok: false, reason: 'vehicle_locked', level: level, price: 0, points: points, shortfall: 0 };
+          return {};
+        }
+        if (level >= UPGRADE_PRICES.length) {
+          result = { ok: false, reason: 'max', level: level, price: 0, points: points, shortfall: 0 };
+          return {};
+        }
+        var price = UPGRADE_PRICES[level];
+        if (points < price) {
+          result = { ok: false, reason: 'insufficient', level: level, price: price, points: points, shortfall: price - points };
+          return {};
+        }
+        result = { ok: true, reason: 'purchased', level: level + 1, price: price, points: points - price, shortfall: 0 };
+        var patch = { 'progress.points': points - price };
+        patch[key] = level + 1;
+        return patch;
+      }, 'purchase_upgrade');
+      result.vehicle = vehicleId;
+      result.stat = stat;
+      return result;
+    }
+
     window.HorizonDriveWallet = {
       vehicles: VEHICLES.slice(),
       price: function (id) {
@@ -802,6 +936,17 @@
       selectPaint: selectPaint,
       purchasePaint: purchasePaint,
       flush: flushPendingPoints,
+      achievements: function () {
+        return ACHIEVEMENTS.map(function (a) {
+          var out = copy(a);
+          out.claimed = value('achv.' + a.id) === true;
+          return out;
+        });
+      },
+      claimAchievement: claimAchievement,
+      upgradeLevel: upgradeLevel,
+      upgradesFor: upgradesFor,
+      purchaseUpgrade: purchaseUpgrade,
       storageMode: function () {
         // 尚无任何存档字段时 persist 未执行过，storageState 仍为初始 memory，需主动探测存储是否可写
         if (Object.keys(fields).length) return storageState.mode;
@@ -1692,6 +1837,89 @@
     /**
      * 撤销涂装“再次点击确认解锁”状态
      */
+    // 升级项“再次点击确认购买”状态（键为 座驾:升级项），与涂装确认互不干扰
+    var upgradeArmed = null;
+    var upgradeArmTimer = 0;
+
+    function disarmUpgrade() {
+      upgradeArmed = null;
+      if (upgradeArmTimer) {
+        clearTimeout(upgradeArmTimer);
+        upgradeArmTimer = 0;
+      }
+    }
+
+    function armUpgrade(key) {
+      disarmUpgrade();
+      upgradeArmed = key;
+      upgradeArmTimer = setTimeout(function () {
+        upgradeArmTimer = 0;
+        upgradeArmed = null;
+        paintUpgrades();
+      }, ARM_TIMEOUT);
+    }
+
+    /**
+     * 刷新性能升级面板：每项显示名称、效果说明、等级刻度与购买按钮
+     */
+    function paintUpgrades() {
+      var box = document.getElementById('garage-upgrades-list');
+      if (!box || !wallet || typeof wallet.upgradesFor !== 'function') return;
+      var title = document.getElementById('garage-upgrades-title');
+      if (title) title.textContent = pick('🔧 Performance Upgrades', '🔧 性能升级');
+      var list = wallet.upgradesFor(draft);
+      var points = wallet.balance();
+      var vehicleOwned = wallet.isOwned(draft);
+      if (box.children.length !== list.length) {
+        box.innerHTML = '';
+        list.forEach(function (u) {
+          var row = document.createElement('div');
+          row.className = 'garage-upgrade-row';
+          row.innerHTML =
+            '<span class="garage-upgrade-info"><b></b><small></small></span>' +
+            '<span class="garage-upgrade-pips" aria-hidden="true"></span>' +
+            '<button type="button" class="garage-upgrade-buy"></button>';
+          row.querySelector('.garage-upgrade-buy').setAttribute('data-upgrade-buy', u.id);
+          box.appendChild(row);
+        });
+      }
+      list.forEach(function (u, idx) {
+        var row = box.children[idx];
+        row.setAttribute('data-upgrade', u.id);
+        row.querySelector('.garage-upgrade-info b').textContent = u.icon + ' ' + pick(u.nameEn, u.nameZh);
+        row.querySelector('.garage-upgrade-info small').textContent = pick(u.effectEn, u.effectZh);
+        var pips = row.querySelector('.garage-upgrade-pips');
+        var pipHtml = '';
+        for (var p = 0; p < u.maxLevel; p++) pipHtml += '<i' + (p < u.level ? ' class="on"' : '') + '></i>';
+        pips.innerHTML = pipHtml;
+        var btn = row.querySelector('.garage-upgrade-buy');
+        btn.setAttribute('data-upgrade-buy', u.id);
+        var state;
+        if (u.nextPrice === null) {
+          state = 'max';
+          btn.textContent = pick('MAX', '已满级');
+        } else if (!vehicleOwned) {
+          state = 'vehicle-locked';
+          btn.textContent = '🔒 ' + fmt(u.nextPrice);
+        } else if (points < u.nextPrice) {
+          state = 'locked';
+          btn.textContent = '🔒 ' + fmt(u.nextPrice);
+        } else if (upgradeArmed === draft + ':' + u.id) {
+          state = 'armed';
+          btn.textContent = pick('Confirm −' + fmt(u.nextPrice), '确认 −' + fmt(u.nextPrice));
+        } else {
+          state = 'unlock';
+          btn.textContent = pick('Lv ' + (u.level + 1) + ' · ' + fmt(u.nextPrice), '升到 ' + (u.level + 1) + ' 级 · ' + fmt(u.nextPrice));
+        }
+        btn.setAttribute('data-upgrade-state', state);
+        var label = pick(u.nameEn, u.nameZh) + ' Lv ' + u.level + '/' + u.maxLevel;
+        btn.setAttribute('aria-label', label + ' · ' + btn.textContent);
+        if (state === 'max' || state === 'locked' || state === 'vehicle-locked') btn.setAttribute('aria-disabled', 'true');
+        else btn.removeAttribute('aria-disabled');
+        btn.title = state === 'vehicle-locked' ? pick('Unlock this ride first', '需先解锁座驾') : label;
+      });
+    }
+
     function disarmPaint() {
       paintArmed = null;
       if (paintArmTimer) {
@@ -1834,9 +2062,11 @@
         change.sections.indexOf('progress') >= 0 ||
         change.sections.indexOf('owned') >= 0 ||
         change.sections.indexOf('paint') >= 0 ||
-        change.sections.indexOf('paintOwned') >= 0
+        change.sections.indexOf('paintOwned') >= 0 ||
+        change.sections.indexOf('upgrade') >= 0
       ) {
         paintWorkshop();
+        paintUpgrades();
         paintUnlock();
       }
       if (change.sections.indexOf('records') >= 0) {
@@ -1849,6 +2079,7 @@
       paintRecords();
       paintSpecs();
       paintWorkshop();
+      paintUpgrades();
       paintUnlock();
     });
 
@@ -1879,10 +2110,12 @@
       // 切换到其它载具时撤销未完成的解锁确认与旧提示
       if (armed !== draft) disarm();
       disarmPaint();
+      disarmUpgrade();
       if (notice && notice.vehicle !== draft) notice = null;
       paintRecords();
       paintSpecs();
       paintWorkshop();
+      paintUpgrades();
       paintUnlock();
     }
 
@@ -1979,8 +2212,8 @@
             kind = notice.kind;
           } else if (!owned && points < price) {
             text = pick(
-              'Need ' + fmt(price - points) + ' more PTS · Near-miss overtakes award 150×Combo PTS (max 750), normal overtakes +50',
-              '还差 ' + fmt(price - points) + ' 积分 · 高速贴近车辆惊险超车可获得 150×连击 积分（单次封顶 750），普通超车 +50'
+              'Need ' + fmt(price - points) + ' more PTS · Near misses award 90×Combo PTS (max 450), takedowns +200, every 1 km +100',
+              '还差 ' + fmt(price - points) + ' 积分 · 惊险超车可获得 90×连击 积分（单次封顶 450），撞飞慢车 +200，每跑 1 公里 +100'
             );
           } else if (!owned) {
             text = pick(
@@ -2202,6 +2435,30 @@
         }
         paintWorkshop();
         paintUnlock();
+      } else if (t && t.hasAttribute('data-upgrade-buy')) {
+        var stat = t.getAttribute('data-upgrade-buy');
+        var uState = t.getAttribute('data-upgrade-state');
+        if (uState === 'locked' || uState === 'vehicle-locked') {
+          t.classList.remove('garage-shake');
+          void t.offsetWidth;
+          t.classList.add('garage-shake');
+          return;
+        }
+        if (uState === 'unlock') {
+          armUpgrade(draft + ':' + stat);
+          paintUpgrades();
+          return;
+        }
+        if (uState === 'armed' && wallet) {
+          disarmUpgrade();
+          var uResult = wallet.purchaseUpgrade(draft, stat);
+          if (uResult.ok && window.HorizonCrazyGames && typeof window.HorizonCrazyGames.happytime === 'function') {
+            window.HorizonCrazyGames.happytime();
+          }
+          paintUpgrades();
+          paintUnlock();
+          return;
+        }
       } else if (t && t.id === 'garage-paint-action') {
         var pState = t.getAttribute('data-paint-state');
         if (pState === 'locked' || pState === 'vehicle-locked') {
@@ -3067,7 +3324,7 @@
           '<div class="tutorial-toast-icon">🏆</div>',
           '<div class="tutorial-toast-content">',
           '  <div class="tutorial-toast-title">' + (zh ? '驾驶学院毕业！已发放车库启动基金' : 'Driving Academy Graduated! Starter Bonus Unlocked') + '</div>',
-          '  <div class="tutorial-toast-sub">' + (zh ? '可在左上角「🚗 换车」车库中使用积分兑换传奇跑车' : 'Open "🚗 Ride" Garage anytime to unlock iconic vehicles with PTS') + '</div>',
+          '  <div class="tutorial-toast-sub">' + (zh ? '打开车库（桌面端按 G）就能用这 1,000 积分兑换第一款涂装' : 'Open the Garage (press G on desktop) — 1,000 PTS buys your first livery') + '</div>',
           '</div>',
           '<div class="tutorial-toast-reward">+1,000 PTS</div>'
         ].join('');
@@ -3393,5 +3650,93 @@
         startTutorial(false);
       }
     }, 250);
+  })();
+
+  // ==================== [模块 6] 一次性成就奖励与达成提示 (HorizonAchievements) ====================
+  (function installAchievementController() {
+    if (window.HorizonAchievements) return;
+
+    var wallet = window.HorizonDriveWallet;
+    // 单局里程成就门槛（米）
+    var RUN_DISTANCE_GOALS = [[1000, 'run_1km'], [3000, 'run_3km'], [5000, 'run_5km'], [10000, 'run_10km']];
+    // 新座驾首跑成就所需里程（米）
+    var FIRST_DRIVE_METERS = 1000;
+    // 每条达成提示的停留时长（毫秒）
+    var TOAST_MS = 2600;
+    // 本页会话内已确认领取过的成就，避免达到门槛后每帧重复读写存档
+    var settled = {};
+    var queue = [];
+    var toastEl = null;
+    var toastTimer = 0;
+
+    function isZh() {
+      var i18n = window.HorizonI18n;
+      return i18n && typeof i18n.lang === 'function' ? i18n.lang() === 'zh' : false;
+    }
+
+    function claim(id) {
+      if (settled[id] || !wallet || typeof wallet.claimAchievement !== 'function') return;
+      settled[id] = true;
+      var def = wallet.claimAchievement(id);
+      if (def) {
+        queue.push(def);
+        if (!toastTimer) showNext();
+      }
+    }
+
+    function showNext() {
+      var def = queue.shift();
+      if (!def) {
+        toastTimer = 0;
+        if (toastEl) toastEl.classList.remove('is-visible');
+        return;
+      }
+      if (!toastEl) {
+        toastEl = document.createElement('div');
+        toastEl.className = 'horizon-achv-toast';
+        toastEl.setAttribute('role', 'status');
+        toastEl.setAttribute('aria-live', 'polite');
+        document.body.appendChild(toastEl);
+      }
+      var zh = isZh();
+      toastEl.innerHTML =
+        '<span class="achv-icon" aria-hidden="true">' + def.icon + '</span>' +
+        '<span class="achv-text"><small>' + (zh ? '成就达成' : 'ACHIEVEMENT') + '</small><b>' + (zh ? def.nameZh : def.nameEn) + '</b></span>' +
+        '<span class="achv-pts">+' + String(def.pts).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '</span>';
+      toastEl.classList.remove('is-visible');
+      void toastEl.offsetWidth;
+      toastEl.classList.add('is-visible');
+      if (window.HorizonCrazyGames && typeof window.HorizonCrazyGames.happytime === 'function') {
+        window.HorizonCrazyGames.happytime();
+      }
+      toastTimer = setTimeout(showNext, TOAST_MS);
+    }
+
+    /**
+     * 由 drive.js 在驾驶事件发生时调用
+     * @param {string} evt 事件类型：nearMiss（data.combo / data.split）、takedown、distance（data.m 本局里程米数 / data.vehicle 当前座驾）
+     * @param {object} data 事件数据
+     */
+    function report(evt, data) {
+      var d = data || {};
+      if (evt === 'nearMiss') {
+        claim('near_miss_1');
+        if (d.combo >= 3) claim('combo_3');
+        if (d.combo >= 5) claim('combo_5');
+        if (d.split) claim('split_1');
+      } else if (evt === 'takedown') {
+        claim('takedown_1');
+      } else if (evt === 'distance') {
+        var m = Number(d.m) || 0;
+        for (var i = 0; i < RUN_DISTANCE_GOALS.length; i++) {
+          if (m >= RUN_DISTANCE_GOALS[i][0]) claim(RUN_DISTANCE_GOALS[i][1]);
+        }
+        if (m >= FIRST_DRIVE_METERS && (d.vehicle === 'motorcycle' || d.vehicle === 'truck' || d.vehicle === 'jet')) {
+          claim('drive_' + d.vehicle);
+        }
+      }
+    }
+
+    window.HorizonAchievements = { report: report };
   })();
 })();

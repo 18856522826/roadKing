@@ -9,10 +9,10 @@
   <!-- 网站图标与核心样式表 -->
   <link rel="icon" href="./assets/images/favicon.svg?v=20261102b">
   <link id="game-style" rel="stylesheet" href="./assets/css/drive.css?v=20261102b">
-  <link rel="stylesheet" href="./assets/css/boot.css?v=20261102b">
+  <link rel="stylesheet" href="./assets/css/boot.css?v=20261105a">
   <link rel="stylesheet" href="./assets/css/desktop-controls.css?v=20261102b">
   <!-- 极简街机风 UI 主题层：最后加载，统一覆盖 HUD / 结算 / 车库 / 设置 / 加载页 -->
-  <link rel="stylesheet" href="./assets/css/arcade-ui.css?v=20261105a">
+  <link rel="stylesheet" href="./assets/css/arcade-ui.css?v=20261105c">
 </head>
 <body>
   <!-- ==================== 1. 备用主控大厅屏幕（CrazyGames 直进模式下默认隐藏） ==================== -->
@@ -234,6 +234,11 @@
             </div>
             <div class="garage-paint-swatches" id="garage-paint-swatches" role="group" aria-label="Choose paint color" data-i18n-aria="garage.paintSwatchesAria"></div>
           </div>
+          <!-- 性能升级面板：每车 氮气 / 操控 / 护甲 各 3 级，积分购买后下一帧即生效（由 boot.js paintUpgrades 实时刷新） -->
+          <div class="garage-upgrades" id="garage-upgrades" role="region" aria-labelledby="garage-upgrades-title">
+            <span class="garage-upgrades-title" id="garage-upgrades-title">🔧 Performance Upgrades</span>
+            <div class="garage-upgrades-list" id="garage-upgrades-list"></div>
+          </div>
           <!-- 积分解锁信息：价格 / 拥有状态、积分进度条与获取提示（由 boot.js paintUnlock 实时刷新） -->
           <div class="garage-unlock" id="garage-unlock" data-owned="true">
             <div class="garage-unlock-row">
@@ -255,10 +260,10 @@
   <!-- ==================== 5. 游戏核心脚本按序加载 ==================== -->
   <script src="./assets/js/desktop-controls.js?v=20261102b"></script>
   <script src="./assets/js/viewport.js?v=20261102b"></script>
-  <script src="./assets/js/boot.js?v=20261102b"></script>
+  <script src="./assets/js/boot.js?v=20261105b"></script>
   <script src="./assets/js/vendor-engine.js?v=20261102b"></script>
   <script src="./assets/js/drive-models.js?v=20261102b"></script>
   <script src="./assets/js/drive-maps.js?v=20261102b"></script>
-  <script src="./assets/js/drive.js?v=20261104a"></script>
+  <script src="./assets/js/drive.js?v=20261105b"></script>
 </body>
 </html>

@@ -725,6 +725,7 @@ html body .garage-specs[data-spec-vehicle] .garage-stat-bar i {
   box-shadow: none;
 }
 html body .garage-paint-workshop,
+html body .garage-upgrades,
 html body .garage-unlock {
   border: 1px solid var(--ui-line);
   border-radius: var(--ui-radius);
@@ -734,6 +735,12 @@ html body .garage-unlock {
 html body .garage-unlock[data-owned='false'] { border-color: rgba(255, 122, 26, 0.45); }
 html body .garage-paint-action { border-radius: 6px; box-shadow: none; }
 html body .garage-unlock-bar { height: 3px; background: rgba(255, 255, 255, 0.1); }
+html body .garage-upgrades-title { color: var(--ui-dim); font-size: 10px; letter-spacing: 1.2px; }
+html body .garage-upgrade-row + .garage-upgrade-row { border-top-color: var(--ui-line); }
+html body .garage-upgrade-info small { color: var(--ui-dim); }
+html body .garage-upgrade-pips i { background: rgba(255, 255, 255, 0.12); }
+html body .garage-upgrade-buy { border-radius: 6px; font-family: var(--ui-font); }
+html body .garage-upgrade-buy[data-upgrade-state='unlock'] { border-color: var(--ui-nos); background: var(--ui-nos); color: #140800; }
 html body .garage-unlock-bar i { background: var(--ui-nos); box-shadow: none; }
 
 /* 主按钮统一为实心电光青，次要按钮为描边 */
@@ -832,3 +839,76 @@ html body .boot-track {
 }
 html body .boot-track i { background: var(--ui-accent); box-shadow: none; }
 html body #boot-message { color: var(--ui-faint); font-size: 11px; letter-spacing: 0.6px; }
+
+/* ==================== 6. 成就达成提示与新手毕业提示 ==================== */
+/* 成就提示放在后视镜下方；新手引导进行中时再下移，避开引导卡片 */
+.horizon-achv-toast {
+  position: fixed;
+  z-index: 24000;
+  left: 50%;
+  top: calc(var(--safe-top, 0px) + var(--top-hud-height, 90px) + 30px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 10px;
+  border: 1px solid rgba(255, 201, 64, 0.55);
+  border-radius: var(--ui-radius);
+  background: rgba(8, 11, 18, 0.9);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  color: var(--ui-text);
+  font-family: var(--ui-font);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -10px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.horizon-achv-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+/* 引导卡片位于后视镜与键位提示条下方（约 142px 起、高约 110px），成就提示整体移到卡片之下 */
+html[data-tutorial-active='true'] .horizon-achv-toast {
+  top: calc(var(--safe-top, 0px) + 270px);
+}
+.horizon-achv-toast .achv-icon { font-size: 20px; line-height: 1; }
+.horizon-achv-toast .achv-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.horizon-achv-toast .achv-text small {
+  color: var(--ui-gold);
+  font: 800 9px/1 var(--ui-font);
+  letter-spacing: 1.6px;
+}
+.horizon-achv-toast .achv-text b {
+  font: 700 13px/1.2 var(--ui-font);
+  white-space: nowrap;
+}
+.horizon-achv-toast .achv-pts {
+  margin-left: 6px;
+  color: var(--ui-gold);
+  font: italic 900 18px/1 var(--ui-font);
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .horizon-achv-toast { transition: none; }
+}
+
+html body .horizon-tutorial-toast {
+  border: 1px solid rgba(255, 201, 64, 0.55);
+  border-radius: 12px;
+  background: rgba(8, 11, 18, 0.92);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  font-family: var(--ui-font);
+}
+html body .horizon-tutorial-toast .tutorial-toast-icon {
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 201, 64, 0.14);
+}
+html body .horizon-tutorial-toast .tutorial-toast-title { color: var(--ui-gold); }
+html body .horizon-tutorial-toast .tutorial-toast-sub { color: var(--ui-dim); }
+html body .horizon-tutorial-toast .tutorial-toast-reward {
+  border-radius: 6px;
+  background: var(--ui-gold);
+  box-shadow: none;
+  color: #1a1200;
+  font-style: italic;
+}
