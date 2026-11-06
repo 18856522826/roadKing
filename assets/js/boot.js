@@ -93,14 +93,20 @@
       { id: 'drive_jet', pts: 1000, icon: '🚀', nameEn: 'Aether Jet: First 1 km', nameZh: '天穹飞车首跑 1 公里' }
     ];
     /**
-     * 座驾性能升级：每车 3 项 × 3 级，每级价格 2,000 / 4,000 / 8,000（单车满级 42,000，四车 168,000），
+     * 座驾性能升级：每车 3 项（飞车额外 1 项「飞行续航」）× 3 级，每级价格 2,000 / 4,000 / 8,000（单车满级 42,000，飞车 56,000，四车 182,000），
      * 作为全车库解锁（约第 16 分钟）之后到第 60 分钟的主要积分出口；drive.js 通过 upgradeLevel() 按等级实时读取效果系数
      */
     var UPGRADES = [
       { id: 'nos', icon: '🔥', nameEn: 'Nitro System', nameZh: '氮气系统', effectEn: 'Per level: −12% NOS burn, +20% passive recharge', effectZh: '每级：氮气消耗 −12%，自动回充 +20%' },
       { id: 'handling', icon: '🎯', nameEn: 'Handling', nameZh: '操控', effectEn: 'Per level: +6% steering, +8% braking', effectZh: '每级：转向 +6%，刹车 +8%' },
-      { id: 'armor', icon: '🛡️', nameEn: 'Armor', nameZh: '护甲', effectEn: 'Per level: −10% crash damage', effectZh: '每级：碰撞伤害 −10%' }
+      { id: 'armor', icon: '🛡️', nameEn: 'Armor', nameZh: '护甲', effectEn: 'Per level: −10% crash damage', effectZh: '每级：碰撞伤害 −10%' },
+      // 飞车专属：飞行能量消耗每级 ÷(1+10%)，基础 6 秒 → 满级约 7.8 秒
+      { id: 'flight', only: ['jet'], icon: '✈️', nameEn: 'Flight Endurance', nameZh: '飞行续航', effectEn: 'Per level: +10% flight time (6s base)', effectZh: '每级：飞行时长 +10%（基础 6 秒）' }
     ];
+    // 升级项是否适用于该座驾（only 为空表示全车通用）
+    function upgradeApplies(u, vehicleId) {
+      return !u.only || u.only.indexOf(vehicleId) >= 0;
+    }
     // 第 1 / 2 / 3 级的升级价格，数组长度即最高等级
     var UPGRADE_PRICES = [2000, 4000, 8000];
     // 积分余额与累计积分的数值上限（防止异常数据溢出）
@@ -859,7 +865,8 @@
      * 某座驾某项升级的当前等级（0 ~ UPGRADE_PRICES.length），未知座驾或升级项返回 0
      */
     function upgradeLevel(vehicleId, stat) {
-      if (!own(VEHICLE_PRICES, vehicleId) || !findUpgradeDef(stat)) return 0;
+      var def = findUpgradeDef(stat);
+      if (!own(VEHICLE_PRICES, vehicleId) || !def || !upgradeApplies(def, vehicleId)) return 0;
       return value('upgrade.' + vehicleId + '_' + stat) || 0;
     }
 
@@ -867,7 +874,9 @@
      * 某座驾全部升级项的展示数据（含当前等级、下一级价格；已满级时 nextPrice 为 null）
      */
     function upgradesFor(vehicleId) {
-      return UPGRADES.map(function (u) {
+      return UPGRADES.filter(function (u) {
+        return upgradeApplies(u, vehicleId);
+      }).map(function (u) {
         var out = copy(u);
         out.level = upgradeLevel(vehicleId, u.id);
         out.maxLevel = UPGRADE_PRICES.length;
@@ -882,7 +891,8 @@
      *          reason 取值 purchased / max / vehicle_locked / insufficient / unknown
      */
     function purchaseUpgrade(vehicleId, stat) {
-      if (!own(VEHICLE_PRICES, vehicleId) || !findUpgradeDef(stat)) {
+      var def = findUpgradeDef(stat);
+      if (!own(VEHICLE_PRICES, vehicleId) || !def || !upgradeApplies(def, vehicleId)) {
         return { ok: false, reason: 'unknown', vehicle: vehicleId, stat: stat, level: 0, price: 0, points: balance(), shortfall: 0 };
       }
       flushPendingPoints();
@@ -1085,7 +1095,7 @@
         'vehicle.motorcycle': 'Phantom Superbike',
         'vehicle.motorcycleDesc': 'Track-tuned 325/400 km/h superbike with an ultra-slim 0.34m frame for effortless lane splitting. +30% wider Near-Miss zone, +180 PTS Lane-Split bonus & wheelie auto-NOS/score boost.',
         'vehicle.jet': 'Aether V8 AeroCar',
-        'vehicle.jetDesc': 'Apex 360/445 km/h hypercar with six vectored ion thrusters. Press F for a 10s tactical flight to leap over gridlock, then land to recharge.',
+        'vehicle.jetDesc': 'Apex 360/445 km/h hypercar with six vectored ion thrusters. Press F for a 6s tactical flight to leap over gridlock; ground near-misses recharge it fast.',
         'vehicle.truck': 'Titan V12 Heavy Truck',
         'vehicle.truckDesc': 'Heavy-duty V12 hauler with reinforced armor. Side-swipe small cars for 1.4× PTS, or activate NOS to charge the front bullbar and smash through cars ahead!'
       },
@@ -1164,7 +1174,7 @@
         'vehicle.motorcycle': '幻影重机',
         'vehicle.motorcycleDesc': '赛道级万转四缸仿赛重机（325/400 km/h），0.34m 超窄车身可在两车夹缝中丝滑穿插（钻缝额外奖 +180 分）；惊险超车享 1.35× 收益，按住 J 翘头可持续跳分回氮。',
         'vehicle.jet': '天穹 V8 飞车',
-        'vehicle.jetDesc': '360/445 km/h 陆空双栖终极超跑，搭载六喷口矢量离子推进器；按 F 可开启 10 秒战术飞行跃过拥堵车海，落地飙车即可快速回充飞行能量！',
+        'vehicle.jetDesc': '360/445 km/h 陆空双栖终极超跑，搭载六喷口矢量离子推进器；按 F 可开启 6 秒战术飞行跃过拥堵车海，落地惊险超车可快速回充飞行能量！',
         'vehicle.truck': '泰坦重型卡车',
         'vehicle.truckDesc': '配备重型防撞牛栏与强化装甲——侧面擦撞小车享 1.4× 积分，开启 NOS 氮气冲锋时可用车头牛栏正面撞飞前方小轿车（每次破障消耗 26% 氮气，注意避让大货车）！'
       }
@@ -1726,19 +1736,19 @@
       jet: {
         roleEn: 'AERO APEX',
         roleZh: '陆空极速流',
-        perkTitleEn: '✈️ 10s Tactical Flight & Ground Recharge',
-        perkTitleZh: '✈️ 10秒战术越障飞行 & 落地充能',
-        perkDescEn: 'Highest land speed (360/445 km/h). Press F for up to 10s of flight over gridlock (+45 PTS flyover); land on the road to recharge flight energy.',
-        perkDescZh: '全场最高陆地极速 (360/445 km/h)；按 F 可短时起飞 10 秒越过堵车（空中不回氮气），落地贴车狂飙可快速回充飞行能量！',
+        perkTitleEn: '✈️ 6s Tactical Flight & Near-Miss Recharge',
+        perkTitleZh: '✈️ 6秒战术越障飞行 & 超车充能',
+        perkDescEn: 'Highest land speed (360/445 km/h). Press F for up to 6s of flight over gridlock (+60 PTS flyover). Each ground near-miss restores 1.5s of flight; driving slowly refills the rest.',
+        perkDescZh: '全场最高陆地极速 (360/445 km/h)；按 F 可起飞 6 秒越过堵车（空域掠过 +60 分）；地面每次惊险超车回充 1.5 秒飞行能量，行驶中也会缓慢回充。',
         speedPct: 100,
         speedEn: '360 / 445 km/h',
         speedZh: '360 / 445 km/h',
-        accelPct: 100,
-        accelEn: '1.68× Ion Thrust',
-        accelZh: '1.68× 离子推进',
-        handlingPct: 90,
-        handlingEn: '1.28× Mag-Lev',
-        handlingZh: '1.28× 磁悬转向',
+        accelPct: 78,
+        accelEn: '1.30× Ion Thrust',
+        accelZh: '1.30× 离子推进',
+        handlingPct: 78,
+        handlingEn: '1.10× Mag-Lev',
+        handlingZh: '1.10× 磁悬转向',
         armorPct: 55,
         armorEn: '4 Hits (-25%)',
         armorZh: '4 次抗撞 (-25%)'
