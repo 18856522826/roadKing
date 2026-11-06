@@ -31,17 +31,19 @@
     ];
     var WEATHER = ['storm', 'fog', 'snow'];
     // 全部载具 ID（顺序与车库列表一致）
-    var VEHICLES = ['sedan', 'motorcycle', 'jet', 'truck'];
-    // 载具解锁价格（单位：积分，总计 50,000 积分）；价格为 0 的载具视为初始赠送、永久拥有
+    var VEHICLES = ['sedan', 'motorcycle', 'jet', 'truck', 'police'];
+    // 载具解锁价格（单位：积分，总计 72,000 积分）；价格为 0 的载具视为初始赠送、永久拥有
+    // 05 猎隼拦截者 22,000 插在重卡与飞车之间，填补 15,000 → 30,000 的最大空档
     // 按约 3,000 PTS/分钟（含一次性成就奖励）标定：约第 1.3 / 6.3 / 16.3 分钟依次解锁，保证前 15 分钟每隔几分钟就有新座驾或新涂装
     var VEHICLE_PRICES = {
       sedan: 0,
       motorcycle: 5000,
       truck: 15000,
+      police: 22000,
       jet: 30000
     };
     /**
-     * 四款座驾的专属定制涂装工坊配置表（每车 1 款免费原厂涂装 + 4 款积分解锁涂装）
+     * 五款座驾的专属定制涂装工坊配置表（每车 1 款免费原厂涂装 + 4 款积分解锁涂装）
      * 原厂涂装色值与 drive.js (ad) 及 drive-models.js (Op) 的 3D 材质主色严格一一对齐
      */
     var VEHICLE_PAINTS = {
@@ -72,10 +74,17 @@
         { id: 'supernova', hex: '#ff3d00', price: 5000, nameEn: 'Supernova Flare', nameZh: '超新星赤焰' },
         { id: 'nebula', hex: '#a855f7', price: 8500, nameEn: 'Nebula Violet', nameZh: '星云暗物质' },
         { id: 'celestial', hex: '#ffbe0b', price: 15000, nameEn: 'Celestial Emperor', nameZh: '天穹帝皇金' }
+      ],
+      police: [
+        { id: 'stock', hex: '#1e3a8a', price: 0, nameEn: 'Patrol Navy (Stock)', nameZh: '原厂警务藏蓝' },
+        { id: 'stealth', hex: '#0f172a', price: 1000, nameEn: 'Night Stealth', nameZh: '暗夜潜行黑' },
+        { id: 'sentinel', hex: '#64748b', price: 5000, nameEn: 'Steel Sentinel', nameZh: '钢灰哨兵' },
+        { id: 'pursuit', hex: '#b91c1c', price: 8500, nameEn: 'Crimson Pursuit', nameZh: '赤焰追缉' },
+        { id: 'medal', hex: '#eab308', price: 15000, nameEn: 'Gold Medal of Honor', nameZh: '金徽荣耀' }
       ]
     };
     /**
-     * 一次性成就奖励（每项每个存档只发一次，合计 11,500 PTS），集中在前 15 分钟陆续触发，配合座驾价格制造持续的新鲜感：
+     * 一次性成就奖励（每项每个存档只发一次，合计 13,300 PTS），集中在前 15 分钟陆续触发，配合座驾价格制造持续的新鲜感：
      * 惊险超车 / 连击 / 撞飞 / 钻缝 为第一次玩就能碰到的操作，单局里程逐级抬高门槛，新座驾首跑奖励鼓励换车体验不同玩法
      */
     var ACHIEVEMENTS = [
@@ -90,7 +99,9 @@
       { id: 'run_10km', pts: 3000, icon: '🏆', nameEn: 'Single Run: 10 km', nameZh: '单局跑满 10 公里' },
       { id: 'drive_motorcycle', pts: 1000, icon: '🏍️', nameEn: 'Phantom Bike: First 1 km', nameZh: '幻影重机首跑 1 公里' },
       { id: 'drive_truck', pts: 1000, icon: '🚛', nameEn: 'Titan Truck: First 1 km', nameZh: '泰坦重卡首跑 1 公里' },
-      { id: 'drive_jet', pts: 1000, icon: '🚀', nameEn: 'Aether Jet: First 1 km', nameZh: '天穹飞车首跑 1 公里' }
+      { id: 'drive_jet', pts: 1000, icon: '🚀', nameEn: 'Aether Jet: First 1 km', nameZh: '天穹飞车首跑 1 公里' },
+      { id: 'drive_police', pts: 1000, icon: '🚓', nameEn: 'Falcon Interceptor: First 1 km', nameZh: '猎隼拦截者首跑 1 公里' },
+      { id: 'bust_1', pts: 800, icon: '🚔', nameEn: 'First Bust', nameZh: '首次抓捕通缉车' }
     ];
     /**
      * 座驾性能升级：每车 3 项（飞车额外 1 项「飞行续航」）× 3 级，每级价格 2,000 / 4,000 / 8,000（单车满级 42,000，飞车 56,000，四车 182,000），
@@ -195,7 +206,7 @@
         'display.orientation': ['portrait', 'landscape'],
         'display.camera': ['first', 'third'],
         'display.controls': ['wheel', 'buttons'],
-        'vehicle': ['sedan', 'motorcycle', 'truck', 'jet'],
+        'vehicle': ['sedan', 'motorcycle', 'truck', 'jet', 'police'],
         'mods.density': ['empty', 'sparse', 'normal', 'dense']
       };
       if (allowed[k]) return allowed[k].indexOf(v) >= 0 ? v : void 0;
@@ -1090,6 +1101,7 @@
         'vehicle.motorcycleShort': 'Phantom Bike',
         'vehicle.jetShort': 'Aether V8 Jet',
         'vehicle.truckShort': 'Titan Truck',
+        'vehicle.policeShort': 'Falcon PD',
         'vehicle.sedan': 'Gale GT Coupe',
         'vehicle.sedanDesc': 'Low-slung widebody aero kit with a carbon GT wing. Balanced 285/355 km/h GT dynamics—drift stunts recharge +25% NOS & trigger a temporary shield.',
         'vehicle.motorcycle': 'Phantom Superbike',
@@ -1097,7 +1109,9 @@
         'vehicle.jet': 'Aether V8 AeroCar',
         'vehicle.jetDesc': 'Apex 360/445 km/h hypercar with six vectored ion thrusters. Press F for a 6s tactical flight to leap over gridlock; ground near-misses recharge it fast.',
         'vehicle.truck': 'Titan V12 Heavy Truck',
-        'vehicle.truckDesc': 'Heavy-duty V12 hauler with reinforced armor. Side-swipe small cars for 1.4× PTS, or activate NOS to charge the front bullbar and smash through cars ahead!'
+        'vehicle.truckDesc': 'Heavy-duty V12 hauler with reinforced armor. Side-swipe small cars for 1.4× PTS, or activate NOS to charge the front bullbar and smash through cars ahead!',
+        'vehicle.police': 'Falcon Interceptor',
+        'vehicle.policeDesc': 'Pursuit-tuned 310/390 km/h interceptor. Blazing-fast 290 km/h WANTED cars appear on the highway—hit NOS and ram them within 25s for +1,500 PTS, a full NOS refill and +1 HEAT. Press F to sound the siren and make traffic ahead pull over.'
       },
       zh: {
         'doc.title': '地平线狂飙：无尽公路 (Horizon Overdrive)',
@@ -1169,6 +1183,7 @@
         'vehicle.motorcycleShort': '幻影重机',
         'vehicle.jetShort': '天穹飞车',
         'vehicle.truckShort': '泰坦重卡',
+        'vehicle.policeShort': '猎隼警车',
         'vehicle.sedan': '疾风 GT 轿跑',
         'vehicle.sedanDesc': '低趴宽体套件配碳纤维大尾翼，285/355 km/h 黄金均衡调校；施展漂移特技可瞬间充能 +25% 氮气并展开无损护盾。',
         'vehicle.motorcycle': '幻影重机',
@@ -1176,7 +1191,9 @@
         'vehicle.jet': '天穹 V8 飞车',
         'vehicle.jetDesc': '360/445 km/h 陆空双栖终极超跑，搭载六喷口矢量离子推进器；按 F 可开启 6 秒战术飞行跃过拥堵车海，落地惊险超车可快速回充飞行能量！',
         'vehicle.truck': '泰坦重型卡车',
-        'vehicle.truckDesc': '配备重型防撞牛栏与强化装甲——侧面擦撞小车享 1.4× 积分，开启 NOS 氮气冲锋时可用车头牛栏正面撞飞前方小轿车（每次破障消耗 26% 氮气，注意避让大货车）！'
+        'vehicle.truckDesc': '配备重型防撞牛栏与强化装甲——侧面擦撞小车享 1.4× 积分，开启 NOS 氮气冲锋时可用车头牛栏正面撞飞前方小轿车（每次破障消耗 26% 氮气，注意避让大货车）！',
+        'vehicle.police': '猎隼拦截者',
+        'vehicle.policeDesc': '310/390 km/h 追缉调校拦截车。公路上会出现 290 km/h 的高速通缉车，开氮气追上并在 25 秒内撞下即得 +1,500 分、氮气回满并升 1 级热度；按 F 拉响警笛，前方车辆会主动让道。'
       }
     };
 
@@ -1654,13 +1671,15 @@
       sedan: 'Gale GT Coupe',
       motorcycle: 'Phantom Superbike',
       jet: 'Aether V8 AeroCar',
-      truck: 'Titan V12 Heavy Truck'
+      truck: 'Titan V12 Heavy Truck',
+      police: 'Falcon Interceptor'
     };
     var namesZh = {
       sedan: '疾风 GT 轿跑',
       motorcycle: '幻影重机',
       jet: '天穹 V8 飞车',
-      truck: '泰坦重型卡车'
+      truck: '泰坦重型卡车',
+      police: '猎隼拦截者'
     };
     function getVehicleName(id) {
       return i18n && i18n.lang() === 'zh' ? (namesZh[id] || namesZh.sedan) : (namesEn[id] || namesEn.sedan);
@@ -1670,7 +1689,7 @@
     }
 
     /**
-     * 四款座驾的真实性能参数与专属被动特长字典（与 drive.js 中的 R9 物理矩阵严格一一对应）
+     * 五款座驾的真实性能参数与专属被动特长字典（与 drive.js 中的 R9 物理矩阵严格一一对应）
      */
     var VEHICLE_SPECS = {
       sedan: {
@@ -1749,6 +1768,26 @@
         handlingPct: 78,
         handlingEn: '1.10× Mag-Lev',
         handlingZh: '1.10× 磁悬转向',
+        armorPct: 55,
+        armorEn: '4 Hits (-25%)',
+        armorZh: '4 次抗撞 (-25%)'
+      },
+      police: {
+        roleEn: 'PURSUIT HUNTER',
+        roleZh: '追缉猎手流',
+        perkTitleEn: '🚨 Wanted Pursuit & Siren',
+        perkTitleZh: '🚨 通缉追捕 & 警笛开道',
+        perkDescEn: '290 km/h WANTED cars spawn about every 1.5 km. Ram one from the side or rear within 25s for +1,500 PTS, full NOS & +1 HEAT (rear rams on suspects deal no damage). F: siren makes traffic ahead pull over for 4s (15s cooldown).',
+        perkDescZh: '约每 1.5 公里刷出一辆 290 km/h 的高速通缉车，25 秒内从侧面或后方撞下即得 +1,500 分、氮气回满并升 1 级热度（追尾通缉车不扣血）；按 F 拉响警笛，前方车辆让道 4 秒（冷却 15 秒）。',
+        speedPct: 76,
+        speedEn: '310 / 390 km/h',
+        speedZh: '310 / 390 km/h',
+        accelPct: 72,
+        accelEn: '1.20× Pursuit',
+        accelZh: '1.20× 追缉调校',
+        handlingPct: 82,
+        handlingEn: '1.20× Interceptor',
+        handlingZh: '1.20× 拦截操控',
         armorPct: 55,
         armorEn: '4 Hits (-25%)',
         armorZh: '4 次抗撞 (-25%)'
@@ -3736,12 +3775,14 @@
         if (d.split) claim('split_1');
       } else if (evt === 'takedown') {
         claim('takedown_1');
+      } else if (evt === 'bust') {
+        claim('bust_1');
       } else if (evt === 'distance') {
         var m = Number(d.m) || 0;
         for (var i = 0; i < RUN_DISTANCE_GOALS.length; i++) {
           if (m >= RUN_DISTANCE_GOALS[i][0]) claim(RUN_DISTANCE_GOALS[i][1]);
         }
-        if (m >= FIRST_DRIVE_METERS && (d.vehicle === 'motorcycle' || d.vehicle === 'truck' || d.vehicle === 'jet')) {
+        if (m >= FIRST_DRIVE_METERS && (d.vehicle === 'motorcycle' || d.vehicle === 'truck' || d.vehicle === 'jet' || d.vehicle === 'police')) {
           claim('drive_' + d.vehicle);
         }
       }

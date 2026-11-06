@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="./assets/css/boot.css?v=20261105a">
   <link rel="stylesheet" href="./assets/css/desktop-controls.css?v=20261102b">
   <!-- 极简街机风 UI 主题层：最后加载，统一覆盖 HUD / 结算 / 车库 / 设置 / 加载页 -->
-  <link rel="stylesheet" href="./assets/css/arcade-ui.css?v=20261105i">
+  <link rel="stylesheet" href="./assets/css/arcade-ui.css?v=20261106c">
 </head>
 <body>
   <!-- ==================== 1. 备用主控大厅屏幕（CrazyGames 直进模式下默认隐藏） ==================== -->
@@ -180,6 +180,7 @@
             <button type="button" data-choose-vehicle="motorcycle" aria-pressed="false"><small>02</small><span data-i18n="vehicle.motorcycleShort">Phantom Bike</span><em class="garage-option-tag"></em></button>
             <button type="button" data-choose-vehicle="jet" aria-pressed="false"><small>03</small><span data-i18n="vehicle.jetShort">Aether V8 Jet</span><em class="garage-option-tag"></em></button>
             <button type="button" data-choose-vehicle="truck" aria-pressed="false"><small>04</small><span data-i18n="vehicle.truckShort">Titan Truck</span><em class="garage-option-tag"></em></button>
+            <button type="button" data-choose-vehicle="police" aria-pressed="false"><small>05</small><span data-i18n="vehicle.policeShort">Falcon PD</span><em class="garage-option-tag"></em></button>
           </div>
           <div class="garage-car" data-garage-car="sedan">
             <h3 data-i18n="vehicle.sedan">Gale GT Coupe</h3>
@@ -196,6 +197,10 @@
           <div class="garage-car" data-garage-car="truck" hidden>
             <h3 data-i18n="vehicle.truck">Titan V12 Heavy Truck</h3>
             <p data-i18n="vehicle.truckDesc">Armored with a heavy chrome bullbar and quad roof floodlights. Unstoppable tonnage supremacy—ram any vehicle front or side unscathed!</p>
+          </div>
+          <div class="garage-car" data-garage-car="police" hidden>
+            <h3 data-i18n="vehicle.police">Falcon Interceptor</h3>
+            <p data-i18n="vehicle.policeDesc">Pursuit-tuned 310/390 km/h interceptor. Blazing-fast 290 km/h WANTED cars appear on the highway—hit NOS and ram them within 25s for +1,500 PTS, a full NOS refill and +1 HEAT. Press F to sound the siren and make traffic ahead pull over.</p>
           </div>
           <!-- 车型五维性能对比与专属被动特长面板（由 boot.js paintSpecs 实时刷新） -->
           <div class="garage-specs" id="garage-specs" data-spec-vehicle="sedan">
@@ -260,10 +265,10 @@
   <!-- ==================== 5. 游戏核心脚本按序加载 ==================== -->
   <script src="./assets/js/desktop-controls.js?v=20261102b"></script>
   <script src="./assets/js/viewport.js?v=20261102b"></script>
-  <script src="./assets/js/boot.js?v=20261106a"></script>
+  <script src="./assets/js/boot.js?v=20261106c"></script>
   <script src="./assets/js/vendor-engine.js?v=20261102b"></script>
   <script src="./assets/js/drive-models.js?v=20261102b"></script>
   <script src="./assets/js/drive-maps.js?v=20261102b"></script>
-  <script src="./assets/js/drive.js?v=20261106a"></script>
+  <script src="./assets/js/drive.js?v=20261106f"></script>
 </body>
 </html>

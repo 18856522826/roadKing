@@ -996,3 +996,48 @@ html body .horizon-tutorial-toast .tutorial-toast-reward {
   color: #1a1200;
   font-style: italic;
 }
+
+/* ---------- 05 猎隼拦截者：通缉状态条与警笛按钮 ---------- */
+html body main > .game-ui > .police-wanted-status {
+  position: absolute;
+  z-index: 7;
+  top: calc(196px + var(--safe-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  border: 1px solid rgba(255, 77, 106, 0.6);
+  border-radius: 999px;
+  background: rgba(8, 11, 18, 0.86);
+  color: var(--ui-text);
+  font: 700 13px/1 var(--ui-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: police-wanted-glow 0.5s steps(1) infinite;
+}
+html body main > .game-ui > .police-wanted-status b { color: var(--ui-danger); letter-spacing: 0.6px; }
+html body main > .game-ui > .police-wanted-status span + span { color: var(--ui-dim); }
+html body main > .game-ui > .police-wanted-status[data-urgent='true'] span:nth-child(2) { color: var(--ui-danger); }
+html[data-orientation=landscape] body main > .game-ui > .police-wanted-status {
+  top: calc(var(--ui-pad) + var(--safe-top, 0px) + 128px);
+}
+@keyframes police-wanted-glow {
+  0% { box-shadow: 0 0 0 1px rgba(255, 77, 106, 0.55), 0 0 14px rgba(255, 77, 106, 0.35); }
+  50% { box-shadow: 0 0 0 1px rgba(80, 150, 255, 0.55), 0 0 14px rgba(80, 150, 255, 0.35); }
+}
+html body .police-siren-control .police-siren-icon { font-size: 15px; line-height: 1; }
+html body .police-siren-control[data-active=true] .jet-flight-button {
+  border-color: rgba(255, 77, 106, 0.8);
+  background: linear-gradient(150deg, rgba(120, 22, 40, 0.92), rgba(24, 40, 110, 0.92));
+}
+html body .police-siren-control .jet-energy i { background: linear-gradient(90deg, #ff4d6a, #5096ff); }
+html body .police-siren-control[data-low=true] .jet-energy i { background: #5b6678; }
+@media (prefers-reduced-motion: reduce) {
+  html body main > .game-ui > .police-wanted-status { animation: none; }
+}
+/* 车库 5 款座驾：缩小列表字号，避免名称换行挤压 */
+html body .garage-options button { font-size: 11.5px; letter-spacing: 0; }
+html body .garage-options button span { display: block; padding: 0 2px; white-space: normal; line-height: 1.2; }
