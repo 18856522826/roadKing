@@ -3010,12 +3010,12 @@
           var bonusEn = rewarded ? '' : ' (Complete to claim <strong>+1,000 PTS</strong> starter bonus!)';
           if (zh) {
             return isDesktop
-              ? '按 <kbd>C</kbd> 切换第一/第三人称视角，或按 <kbd>G</kbd> / 点击左上角 <strong>🚗 换车</strong> 用积分兑换传奇跑车！' + bonusZh
-              : '点击右上角<strong>切换视角</strong>，或点击左上角 <strong>🚗 换车</strong> 用超车积分兑换传奇跑车！' + bonusZh;
+              ? '按 <kbd>C</kbd> 切换第一/第三人称视角，或按 <kbd>G</kbd> / 点击右上角 <strong>🚗 换车</strong> 用积分兑换传奇跑车！' + bonusZh
+              : '点击左上角<strong>切换视角</strong>，或点击右上角 <strong>🚗 换车</strong> 用超车积分兑换传奇跑车！' + bonusZh;
           }
           return isDesktop
-            ? 'Press <kbd>C</kbd> to toggle 1st/3rd-person camera, or press <kbd>G</kbd> / click <strong>🚗 Ride</strong> to unlock iconic vehicles!' + bonusEn
-            : 'Tap the top-right <strong>Camera Toggle</strong>, or tap <strong>🚗 Ride</strong> on the top-left to unlock iconic vehicles!' + bonusEn;
+            ? 'Press <kbd>C</kbd> to toggle 1st/3rd-person camera, or press <kbd>G</kbd> / click <strong>🚗 Garage</strong> on the top-right to unlock iconic vehicles!' + bonusEn
+            : 'Tap the top-left <strong>Camera Toggle</strong>, or tap <strong>🚗 Garage</strong> on the top-right to unlock iconic vehicles!' + bonusEn;
         }
       }
     ];
@@ -3193,7 +3193,7 @@
     }
 
     /**
-     * 为当前步骤对应的目标控件同步添加脉冲高亮类名与根属性
+     * 为当前步骤对应的目标控件同步添加脉冲高亮类名与根属性（仅高亮当前视口内可见的控件）
      */
     function syncTargetHighlights() {
       if (!active || !isDrivingRunning()) {
@@ -3208,12 +3208,14 @@
       if (root.getAttribute('data-tutorial-step') !== step.id) {
         root.setAttribute('data-tutorial-step', step.id);
       }
-      // 先移除不在当前选择器列表中的旧高亮节点
+      // 先筛选当前选择器列表中处于可见状态的 DOM 节点（排除桌面端已 display:none 的按钮）
       var wanted = [];
       for (var i = 0; i < step.targets.length; i++) {
         var nodes = document.querySelectorAll(step.targets[i]);
         for (var j = 0; j < nodes.length; j++) {
-          wanted.push(nodes[j]);
+          if (nodes[j].getClientRects && nodes[j].getClientRects().length > 0) {
+            wanted.push(nodes[j]);
+          }
         }
       }
       var existing = document.querySelectorAll('.tutorial-target-pulse');
@@ -3473,6 +3475,26 @@
       var tutState = (settings && settings.get && settings.get('tutorial')) || { completed: false, rewarded: false };
       if (!forceRestart && tutState.completed) return;
 
+      // 当用户主动触发“重新开始教学 / 按 T 键 / 点击顶栏引导”时：
+      // 1. 自动关闭可能遮挡画面的设置弹窗或 3D 车库弹窗；
+      // 2. 若当前处于待机出发页 (ready)、结算页 (ended) 或暂停页 (paused)，自动触发开始/继续驾驶，确保教学卡片立即展现。
+      if (forceRestart) {
+        var settingsCloseBtn = document.querySelector('.game-settings-overlay:not([hidden]) [data-settings-close]');
+        if (settingsCloseBtn) settingsCloseBtn.click();
+        var garageCloseBtn = document.querySelector('.garage-overlay:not([hidden]) [data-garage-close]');
+        if (garageCloseBtn) garageCloseBtn.click();
+
+        var mainEl = document.querySelector('main');
+        var curMode = mainEl ? mainEl.getAttribute('data-mode') : '';
+        if (curMode === 'ready' || curMode === 'ended') {
+          var startBtn = mainEl.querySelector('.panel button.start');
+          if (startBtn && !startBtn.disabled) startBtn.click();
+        } else if (curMode === 'paused') {
+          var resumeBtn = mainEl.querySelector('button.resume-drive');
+          if (resumeBtn && !resumeBtn.disabled) resumeBtn.click();
+        }
+      }
+
       ensureCardDOM();
       active = true;
       lastFrameTime = performance.now();
@@ -3493,7 +3515,7 @@
         return;
       }
 
-      // 如果玩家在第 5 步打开了车库，即便车库遮罩打开中（或者刚关闭），立即判定第 5 步达成并毕业！
+      // 如果玩家在第 6 步打开了车库，即便车库遮罩打开中（或者刚关闭），立即判定第 6 步达成并毕业！
       if (STEPS[stepIndex] && STEPS[stepIndex].id === 'garage' && garageOpenedInStep) {
         completeTutorial(false);
         return;
@@ -3523,6 +3545,13 @@
       var st = tel && tel.state ? tel.state : null;
       var steering = tel && typeof tel.getSteering === 'function' ? Number(tel.getSteering()) || 0 : 0;
 
+      // 防御校准：若中途切换座驾或重开一局导致遥测计数器重置归零，自动将基准值下调对齐，防止产生负数欠债
+      if (st) {
+        if (typeof st.passed === 'number' && st.passed < basePassed) basePassed = st.passed;
+        if (typeof st.tossed === 'number' && st.tossed < baseTossed) baseTossed = st.tossed;
+        if (typeof st.score === 'number' && st.score < baseScore) baseScore = st.score;
+      }
+
       // 如果当前步骤已经达到 100%，等待短暂庆祝停顿后自动切入下一步
       if (stepProgress >= 1) {
         stepDoneHold += dt;
@@ -3532,20 +3561,24 @@
         return;
       }
 
-      stepElapsed += dt;
-      if (stepElapsed >= STEP_TIMEOUT_SEC) {
-        stepProgress = 1;
-        renderProgressUI(1);
-        if (cardEl) cardEl.classList.add('is-step-complete');
-        return;
+      // 仅在非最后一步、且车辆实际处于行驶或操控状态下才累加 45s 防卡关超时兜底，防止 0 车速挂机自动通关领奖
+      var curSpeed = st && typeof st.speed === 'number' ? st.speed : 0;
+      var isActivelyPlaying = curSpeed > 15 || pressedKeys.throttle || pressedKeys.steerLeft || pressedKeys.steerRight || pressedKeys.nos;
+      if (stepIndex < STEPS.length - 1 && isActivelyPlaying) {
+        stepElapsed += dt;
+        if (stepElapsed >= STEP_TIMEOUT_SEC) {
+          stepProgress = 1;
+          renderProgressUI(1);
+          if (cardEl) cardEl.classList.add('is-step-complete');
+          return;
+        }
       }
 
       var newProgress = stepProgress;
 
       if (step.id === 'launch') {
         // Step 1: 车速达到 80 km/h
-        var speed = st && typeof st.speed === 'number' ? st.speed : 0;
-        newProgress = Math.max(stepProgress, Math.min(1, speed / 80));
+        newProgress = Math.max(stepProgress, Math.min(1, curSpeed / 80));
       } else if (step.id === 'steer') {
         // Step 2: 左右变道转向累积
         var absSteer = Math.abs(steering);
@@ -3566,17 +3599,15 @@
         }
         newProgress = Math.min(1, nosAccum / 0.7);
       } else if (step.id === 'overtake') {
-        // Step 4: 连续多次点击远光灯（连按 V 键）触发闪灯、按喇叭或完成超车/得分
+        // Step 4: 闪远光灯、按喇叭催促前车（每次触发 +50% 信号进度，按住持续累加）或完成 1 次超车/得分
         var passedDelta = st && typeof st.passed === 'number' ? Math.max(0, st.passed - basePassed) : 0;
         var scoreDelta = st && typeof st.score === 'number' ? Math.max(0, st.score - baseScore) : 0;
-        var isFlashing = (st && st.flashing === true) || pressedKeys.flash;
-        var isHorning = hornTriggeredInStep || pressedKeys.horn;
 
         if (passedDelta >= 1 || scoreDelta >= 40) {
           newProgress = 1;
         } else {
-          if (isFlashing || isHorning) {
-            overtakeSignalProgress = Math.max(0.55, overtakeSignalProgress + dt * 0.65);
+          if (pressedKeys.flash || pressedKeys.horn) {
+            overtakeSignalProgress = Math.min(1, overtakeSignalProgress + dt * 0.45);
           }
           var scoreRatio = Math.min(0.9, scoreDelta / 40);
           newProgress = Math.min(1, Math.max(stepProgress, overtakeSignalProgress, scoreRatio));
@@ -3588,7 +3619,7 @@
           newProgress = 1;
         }
       } else if (step.id === 'garage') {
-        // Step 6: 切换视角（按 C 或点击右上角）或打开车库（按 G 或点击左上角）
+        // Step 6: 切换视角（按 C 或点击左上角）或打开车库（按 G 或点击右上角）
         var curCam = settings && settings.get && settings.get('display')
           ? settings.get('display').camera
           : (root.getAttribute('data-camera') || 'first');
@@ -3603,6 +3634,15 @@
         if (stepProgress >= 1 && cardEl) {
           cardEl.classList.add('is-step-complete');
         }
+      }
+    }
+
+    /**
+     * 在第 4 步（声光催促与超车）中记录一次离散的闪灯或鸣笛动作（每次动作推进 50% 信号进度，2 次即可满格）
+     */
+    function bumpOvertakeSignal() {
+      if (active && STEPS[stepIndex] && STEPS[stepIndex].id === 'overtake') {
+        overtakeSignalProgress = Math.min(1, overtakeSignalProgress + 0.5);
       }
     }
 
@@ -3623,11 +3663,12 @@
         beamTapStreak = (nowMs - lastBeamTapMs <= 900) ? (beamTapStreak + 1) : 1;
         lastBeamTapMs = nowMs;
         if (beamTapStreak >= 2) pressedKeys.flash = true;
+        bumpOvertakeSignal();
       }
       if (code === 'Space' || code === 'KeyH' || key === ' ' || key === 'h') {
         pressedKeys.horn = true;
-        if (active && STEPS[stepIndex] && STEPS[stepIndex].id === 'overtake') {
-          hornTriggeredInStep = true;
+        if (!e.repeat) {
+          bumpOvertakeSignal();
         }
       }
     });
@@ -3643,11 +3684,20 @@
       if (code === 'Space' || code === 'KeyH' || key === ' ' || key === 'h') pressedKeys.horn = false;
     });
 
-    // 监听 drive.js 派发的鸣笛事件
+    // 监听 drive.js 派发的鸣笛事件与远光灯闪烁事件（兼容移动端按钮点击与桌面端按键）
     window.addEventListener('horizon-horn-trigger', function () {
-      if (active && STEPS[stepIndex] && STEPS[stepIndex].id === 'overtake') {
-        hornTriggeredInStep = true;
-      }
+      bumpOvertakeSignal();
+    });
+    window.addEventListener('horizon-flash-trigger', function () {
+      bumpOvertakeSignal();
+    });
+
+    // 监听中途车库切换座驾事件：重置遥测基准值，防止场景重建归零后产生负数差值
+    window.addEventListener('garage-vehicle-confirmed', function () {
+      if (!active) return;
+      basePassed = 0;
+      baseTossed = 0;
+      baseScore = 0;
     });
 
     // 监听语言、操控模式、视口变化，实时刷新引导卡片文案

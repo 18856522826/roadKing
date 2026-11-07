@@ -86,17 +86,17 @@ html body main > .game-ui .hud-kbd {
   position: absolute;
   top: -6px;
   right: -6px;
-  min-width: 15px;
-  height: 15px;
+  min-width: 16px;
+  height: 16px;
   margin: 0;
-  padding: 0 3px;
+  padding: 0 3.5px;
   box-sizing: border-box;
   border: 1px solid var(--ui-line-strong);
   border-radius: 4px;
   background: var(--ui-surface);
   box-shadow: none;
   color: var(--ui-dim);
-  font: 700 9px/13px var(--ui-font);
+  font: 700 11px/14px var(--ui-font);
   text-align: center;
 }
 
@@ -162,9 +162,8 @@ html[data-desktop='true'][data-orientation=landscape] body main[data-mode] > .ga
   right: calc(var(--ui-pad) + var(--safe-right, 0px) + 2 * (var(--ui-btn-h) + var(--ui-gap)));
 }
 
-/* 桌面端右上角只保留 设置 / 引导 / 语言：换车(G)、复位(R)、视角(C)、表情(B) 都有快捷键并列在键位提示条里；
-   表情只隐藏按钮不隐藏容器，按 B 弹出的表情菜单仍挂在容器里。触屏设备没有键盘，保留全部按钮 */
-html[data-desktop='true'] body main > .game-ui .home-return-button .hud-garage-btn,
+/* 桌面端右上角保留 换车(G) / 设置 / 引导 / 语言（确保新手引导第 6 步与鼠标点击换车顺畅可用）：
+   复位(R)、视角(C)、表情(B) 都有快捷键并列在键位提示条里；表情只隐藏按钮不隐藏容器 */
 html[data-desktop='true'] body main > .game-ui > .control-tools,
 html[data-desktop='true'] body main > .game-ui > .reverse-view-button,
 html[data-desktop='true'] body main > .game-ui .emote-controls > .emote-toggle,
@@ -201,7 +200,7 @@ html body main > .game-ui > aside {
 }
 html body main > .game-ui > aside .eyebrow {
   color: var(--ui-dim);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.6px;
   line-height: 1.2;
@@ -227,7 +226,7 @@ html body main > .game-ui > aside .horizon-score-badge {
   padding: 0;
   border: 0;
   color: var(--ui-dim);
-  font: 700 10px/1 var(--ui-font);
+  font: 700 11px/1 var(--ui-font);
   letter-spacing: 1.4px;
   justify-content: flex-start;
   gap: 8px;
@@ -247,7 +246,7 @@ html body main > .game-ui > aside .horizon-score-badge .hud-best-pill {
   background: none;
   box-shadow: none;
   color: var(--ui-dim);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 1px;
   text-shadow: none;
 }
@@ -263,14 +262,14 @@ html body main > .game-ui > aside .integrity-label {
   justify-content: space-between;
   margin-bottom: 4px;
   color: var(--ui-dim);
-  font: 700 9px/1.2 var(--ui-font);
+  font: 700 11px/1.2 var(--ui-font);
   letter-spacing: 1.4px;
   white-space: nowrap;
 }
 html body main > .game-ui > aside .integrity-label b {
   margin-left: 6px;
   color: var(--ui-text);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0;
 }
 html body main > .game-ui > aside .integrity-bar {
@@ -290,13 +289,13 @@ html body main > .game-ui > aside .horizon-heat-badge {
   position: absolute;
   top: 12px;
   right: 0;
-  width: 54px;
+  width: 62px;
   margin: 0;
   padding: 3px 5px 4px;
   border: 1px solid var(--heat-color);
   border-radius: 6px;
   background: rgba(3, 5, 9, 0.38);
-  font: 700 10px/1 var(--ui-font);
+  font: 700 11px/1 var(--ui-font);
   letter-spacing: 0;
   text-shadow: none;
   box-sizing: border-box;
@@ -309,7 +308,7 @@ html body main > .game-ui > aside .horizon-heat-badge span {
 html body main > .game-ui > aside .horizon-heat-badge small {
   flex-basis: 100%;
   margin-bottom: 2px;
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 1.2px;
   opacity: 0.85;
 }
@@ -320,7 +319,7 @@ html body main > .game-ui > aside .horizon-heat-badge em {
   margin-left: auto;
   padding: 1px 3px;
   border-radius: 3px;
-  font-size: 9px;
+  font-size: 11px;
 }
 html body main > .game-ui > aside .horizon-heat-badge i {
   height: 2px;
@@ -388,7 +387,7 @@ html[data-desktop='true'] body main > .game-ui .turn-stalk::after {
   border: 0;
   background: none;
   color: var(--ui-dim);
-  font: 700 10px/1 var(--ui-font);
+  font: 700 11px/1 var(--ui-font);
   letter-spacing: 0.6px;
   text-shadow: var(--ui-shadow-text);
   transform: translateY(-50%);
@@ -432,15 +431,15 @@ html[data-desktop='true'] body main > .game-ui .stunt-buttons button::after {
   left: auto;
   right: -6px;
   top: -6px;
-  min-width: 15px;
-  height: 15px;
-  padding: 0 3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3.5px;
   box-sizing: border-box;
   border: 1px solid var(--ui-line-strong);
   border-radius: 4px;
   background: var(--ui-surface);
   color: var(--ui-dim);
-  font: 700 9px/13px var(--ui-font);
+  font: 700 11px/14px var(--ui-font);
   font-style: normal;
   text-align: center;
   transform: none;
@@ -458,7 +457,7 @@ html body main > .game-ui > footer > .speed strong {
 }
 html body main > .game-ui > footer > .speed span {
   color: var(--ui-dim);
-  font: 700 10px/1.4 var(--ui-font);
+  font: 700 11px/1.4 var(--ui-font);
   letter-spacing: 1.6px;
   text-transform: uppercase;
 }
@@ -525,7 +524,7 @@ html body main > .game-ui .nos-energy i {
 /* 踏板文字标签 */
 html body main > .game-ui .mobile-controls .pedal-label {
   color: var(--ui-dim);
-  font: 700 10px/1.4 var(--ui-font);
+  font: 700 11px/1.4 var(--ui-font);
   letter-spacing: 1.2px;
   text-transform: uppercase;
   text-shadow: var(--ui-shadow-text);
@@ -624,7 +623,7 @@ html body main > .game-ui > .panel.run-ended-panel .run-new-record-banner {
   background: var(--ui-gold);
   box-shadow: none;
   color: #1a1200;
-  font: 800 10px/1.2 var(--ui-font);
+  font: 800 11px/1.2 var(--ui-font);
   letter-spacing: 1.2px;
   animation: none;
 }
@@ -642,7 +641,7 @@ html body main > .game-ui > .panel.run-ended-panel .run-stat-card {
 html body main > .game-ui > .panel.run-ended-panel .run-stat-card:first-child { padding-left: 0; border-left: 0; }
 html body main > .game-ui > .panel.run-ended-panel .run-stat-label {
   color: var(--ui-dim);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.4px;
 }
 html body main > .game-ui > .panel.run-ended-panel .run-stat-val {
@@ -659,7 +658,7 @@ html body main > .game-ui > .panel.run-ended-panel .run-stat-val small {
 html body main > .game-ui > .panel.run-ended-panel .run-stat-card.is-record .run-stat-val { color: var(--ui-gold); }
 html body main > .game-ui > .panel.run-ended-panel .run-stat-best {
   color: var(--ui-faint);
-  font-size: 10px;
+  font-size: 11px;
   font-style: normal;
 }
 html body main > .game-ui > .panel.run-ended-panel .run-stat-card.is-record .run-stat-best { color: var(--ui-gold); }
@@ -765,7 +764,7 @@ html body .garage-wallet b { color: var(--ui-gold); font-style: italic; text-sha
 html body .garage-stage {
   background: radial-gradient(120% 70% at 50% 100%, #1a2232 0%, #0c1018 70%);
 }
-html body .garage-drag-hint { color: var(--ui-faint); font-size: 10px; letter-spacing: 1.6px; }
+html body .garage-drag-hint { color: var(--ui-faint); font-size: 11px; letter-spacing: 1.6px; }
 html body .garage-records-bar {
   border: 0;
   border-top: 1px solid var(--ui-line);
@@ -776,7 +775,7 @@ html body .garage-records-bar {
   backdrop-filter: none;
 }
 html body .garage-record-item { border-right-color: var(--ui-line); }
-html body .garage-record-label { color: var(--ui-dim); font-size: 10px; letter-spacing: 1.2px; }
+html body .garage-record-label { color: var(--ui-dim); font-size: 11px; letter-spacing: 1.2px; }
 html body .garage-record-val { color: var(--ui-text); font: italic 800 14px/1.15 var(--ui-font); text-shadow: none; }
 
 html body .garage-options { border-bottom-color: var(--ui-line); }
@@ -800,7 +799,7 @@ html body .garage-stats-grid {
   background: none;
   gap: 10px 14px;
 }
-html body .garage-stat-label { color: var(--ui-dim); font-size: 10px; letter-spacing: 0.6px; }
+html body .garage-stat-label { color: var(--ui-dim); font-size: 11px; letter-spacing: 0.6px; }
 html body .garage-stat-label b { color: var(--ui-text); font-style: italic; }
 html body .garage-stat-bar { height: 3px; background: rgba(255, 255, 255, 0.1); }
 html body .garage-stat-bar i,
@@ -819,7 +818,7 @@ html body .garage-unlock {
 html body .garage-unlock[data-owned='false'] { border-color: rgba(255, 122, 26, 0.45); }
 html body .garage-paint-action { border-radius: 6px; box-shadow: none; }
 html body .garage-unlock-bar { height: 3px; background: rgba(255, 255, 255, 0.1); }
-html body .garage-upgrades-title { color: var(--ui-dim); font-size: 10px; letter-spacing: 1.2px; }
+html body .garage-upgrades-title { color: var(--ui-dim); font-size: 11px; letter-spacing: 1.2px; }
 html body .garage-upgrade-row + .garage-upgrade-row { border-top-color: var(--ui-line); }
 html body .garage-upgrade-info small { color: var(--ui-dim); }
 html body .garage-upgrade-pips i { background: rgba(255, 255, 255, 0.12); }
@@ -887,7 +886,7 @@ html body .boot-content { max-width: none; width: auto; padding: 24px; }
 html body .boot-kicker {
   margin-bottom: 22px;
   color: var(--ui-dim);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 4px;
 }
 html body .boot-scene {
@@ -958,7 +957,7 @@ html[data-tutorial-active='true'] .horizon-achv-toast {
 .horizon-achv-toast .achv-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .horizon-achv-toast .achv-text small {
   color: var(--ui-gold);
-  font: 800 9px/1 var(--ui-font);
+  font: 800 11px/1 var(--ui-font);
   letter-spacing: 1.6px;
 }
 .horizon-achv-toast .achv-text b {

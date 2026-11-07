@@ -895,3 +895,44 @@ CrazyGames [玩法要求](https://docs.crazygames.com/requirements/gameplay/)（
 - 5 款涂装：原厂警务藏蓝（免费）/ 暗夜潜行黑 1,000 / 钢灰哨兵 5,000 / 赤焰追缉 8,500 / 金徽荣耀 15,000。
 - 新成就：`drive_police` 猎隼拦截者首跑 1 公里（1,000）、`bust_1` 首次抓捕通缉车（800），一次性成就合计 `13,300 PTS`。
 - 车库列表新增第 5 个按钮；车型名称允许换行，避免 5 列时挤在一起。
+
+
+---
+
+## 三十一、CrazyGames 质量规范全维度合规修复与发布包同步（2026-11-06）
+
+### 1. 审计背景
+对照 CrazyGames 官方质量规范（`https://docs.crazygames.com/requirements/quality/`）及 `crazygames-quality-auditor` 自动化体检脚本，对全项目执行静态扫描与交互链路复核，完成以下 4 项合规与体验修复，并同步重打包 `HorizonOverdrive-CrazyGames.zip`。
+
+### 2. 修复明细
+
+| 编号 | 规范维度 | 根因定位 | 生产级修复方案 |
+| :--- | :--- | :--- | :--- |
+| **#1** | **直观操控与新手引导闭环 (Intuitive Controls & Onboarding)** | `assets/css/arcade-ui.css` 第 167 行曾将桌面端 `.hud-garage-btn` 设为 `display: none`，导致桌面端 `G` 键（依赖按钮可见几何尺寸 `getClientRects().length`）及新手引导第 6 步（高亮 `.hud-garage-btn`）无法点击；同时顶部键位提示条缺少 `F` 键（飞行/警笛）说明 | 1. 在 `assets/css/arcade-ui.css` 中移除对 `.hud-garage-btn` 的桌面端隐藏规则，恢复右上角「🚗 换车 / Garage」按钮显示；<br>2. 在 `assets/js/desktop-controls.js` 中为 `G` 键增加 `window.dispatchEvent(new CustomEvent('horizon-open-garage'))` 兜底派发，并在 `refreshHintTexts()` 中补充 `F 飞行/警笛` / `F Flight/Siren` 提示 |
+| **#2** | **SDK v3 音频与生命周期受控 (Audio & Lifecycle Compliance)** | `assets/js/drive.js` 中猎隼拦截者（`police`）的 3.6 秒警笛振荡器 `__hdSirenSound()` 仅在触发瞬间读取一次 `o0()`，播放中途触发平台静音、广告遮罩、切后台、暂停或撞毁时不会立即中断 | 在 `assets/js/drive.js` 中维护活跃节点句柄 `__hdSirenOsc` 与 `__hdSirenGain`，新增 `__hdSirenStop()` 与 `__hdSirenSync(ev)`：<br>1. 监听 `bgm-volume-change`、`horizon-mute-change`、`horizon-ad-state`、`blur`、`visibilitychange`，当 `o0() <= 0`、进入广告/弹窗遮罩、窗口失焦或切后台时立即归零增益并停止振荡器；<br>2. 在 `fE.pause()`、`fE.impact(_, true)`、`fE.dispose()` 及 `__hdPurReset()` 中同步调用 `__hdSirenStop()` |
+| **#3** | **全界面可读字号合规 (Readable Content)** | `assets/css/arcade-ui.css` 中存在 22 处 `< 10.5px`（`8px`、`9px`、`10px`）的微缩字号，在 CrazyGames 标准桌面小窗（`854×480`）下可读性偏弱并触发审计告警 | 将 `assets/css/arcade-ui.css` 中全部 22 处 `< 10.5px` 的字号统一升级为 `11px`，同步将 `.hud-kbd` 与 `.stunt-buttons button::after` 尺寸从 `15px` 提升至 `16px`，并将 `.horizon-heat-badge` 宽度从 `54px` 拓宽至 `62px`，确保不发生文字换行或溢出 |
+| **#4** | **多语言实时重绘与发布包同步 (Language Support & Build Sync)** | `assets/js/drive.js` 中通缉车头顶 3D 精灵 `__hdWantedSprite` 仅在首次创建时绘制一次文字，追缉途中切换中英文不会实时刷新；且 `HorizonOverdrive-CrazyGames.zip` 落后于最新工作区代码 | 1. 为 `__hdWantedSprite` 挂载 `sp.redraw = draw` 方法，在生成通缉车标记与 `onLangChange`（`horizon-lang-change`）事件中主动调用重绘并置位 `tex.needsUpdate = true`；<br>2. 将 `index.html` 中 `arcade-ui.css`、`desktop-controls.js`、`drive.js` 的缓存版本号更新为 `?v=20261106g`，重新打包 `HorizonOverdrive-CrazyGames.zip`（33 个生产文件 SHA-256 与工作区 100% 一致，总大小 `5,653,295` 字节，远低于 250 MB 上限） |
+
+### 3. 自动化审计复核结果
+重新运行 `audit_crazygames_project.py --project-dir "."`：
+- **SDK v3 关键能力覆盖率**：10/10 项全绿通过（`SDK.init`、`loadingStart`、`loadingStop`、`gameplayStart`、`gameplayStop`、`happytime`、`requestAd`、`muteAudio`、`addSettingsChangeListener`、`systemInfo`）。
+- **静态代码合规风险扫描**：`0` 警告（未发现原生阻塞弹窗、未关闭测试模式、固定帧物理衰减或 `<10px` 微缩字号）。
+
+---
+
+## 三十二、新手教学引导 (`HorizonTutorial`) 6 项逻辑与边界 Bug 修复（2026-11-06）
+
+### 1. 问题诊断与修复清单
+
+| 编号 | 缺陷模块 | 根因分析 | 生产级修复方案 |
+| :--- | :--- | :--- | :--- |
+| **#1** | **第 5 步无损护盾与碰撞伤害冲突 (`drive.js`)** | 第 5 步（`takedown`）文案承诺“训练期间已开启无损护盾”，但 `drive.js` 仅开启了 `UA.heavyRam`（允许撞飞普通轿车），未豁免玩家碰撞伤害（`ut.invincible` 仍为 `false`），且重型大货车（`ZA.length >= 6`）不可被弹飞；玩家侧撞重卡或追尾时仍会扣血甚至撞毁 Game Over | 1. 在 `assets/js/drive.js` 碰撞扣血与撞毁判定处增加 `document.documentElement.dataset.tutorialActive !== "true"` 守卫，确保新手教学激活期间全程享有真正的无损护盾；<br>2. 在 `ZA.body.tossable` 判定中，当处于 `tutorialStep === "takedown"` 时允许弹飞包含重卡在内的任意非保护车辆 |
+| **#2** | **中途换车重置场景导致遥测基准负数欠债 (`boot.js`)** | 引导中途通过 3D 车库切换座驾（`garage-vehicle-confirmed`）会重建场景并将 `st.passed`、`st.tossed`、`st.score` 归零，但 `HorizonTutorial` 未重置 `basePassed` / `baseTossed` / `baseScore`，导致差值变为负数 | 1. 在 `assets/js/boot.js` 中监听 `garage-vehicle-confirmed` 事件重置 `basePassed = 0; baseTossed = 0; baseScore = 0`；<br>2. 在 `tickTutorial` 每帧读取遥测时增加下界自校准（若 `st.passed < basePassed` 则自动对齐 `basePassed = st.passed`） |
+| **#3** | **第 4 步声光催促判定失衡 (`boot.js` / `drive.js`)** | 键盘按 1 次 `Space`/`H` 会将布尔值 `hornTriggeredInStep` 永久置为 `true`，导致每帧自动累加在 0.7 秒内秒过；而触屏端单次点击高亮的 `.high-beam-button` 因未达到双击阈值，进度始终为 `0%` | 1. 在 `assets/js/drive.js` 的 `flashLights()` 中派发 `horizon-flash-trigger` 事件，并在 `toggleHighBeam()` 中当处于第 4 步（`overtake`）时支持单次点击直接触发闪远光灯；<br>2. 在 `assets/js/boot.js` 中改用离散脉冲计分函数 `bumpOvertakeSignal()`（每次闪灯或鸣笛推进 `+50%` 信号进度，2 次动作或 1 次超车即满 `100%`） |
+| **#4** | **第 6 步文案方位颠倒 & 桌面端高亮隐藏按钮 (`boot.js`)** | 右上角工具栏重构后，「🚗 换车 / Garage」位于右上角，但第 6 步文案仍写为“左上角 / `🚗 Ride`”；且桌面端已隐藏的 `.camera-toggle` 仍被加入脉冲高亮 | 1. 修正 `STEPS[5]`（`id: 'garage'`）中英文双端方位描述与按钮名称（`🚗 换车` / `🚗 Garage`）；<br>2. 在 `syncTargetHighlights()` 中校验 `nodes[j].getClientRects().length > 0`，仅对当前视口可见的控件添加 `.tutorial-target-pulse` |
+| **#5** | **待机页 (`ready`) / 结算页 (`ended`) 按 `T` 键重播引导无反应 (`boot.js` / `desktop-controls.js`)** | `desktop-controls.js` 仅在 `main[data-mode="running"]` 下响应 `T` / `G` 键，且 `startTutorial(true)` 未自动关闭遮罩或触发发车 | 1. 在 `assets/js/desktop-controls.js` 中允许 `T` 与 `G` 键在任意 `main[data-mode]`（无弹窗遮挡时）下触发；<br>2. 在 `assets/js/boot.js` 的 `startTutorial(true)` 中自动关闭打开的设置/车库弹窗，并在 `ready`/`ended` 态自动点击 `.panel button.start` 发车（`paused` 态自动点击 `button.resume-drive`） |
+| **#6** | **0 车速挂机自动超时通关领奖 (`boot.js`)** | `STEP_TIMEOUT_SEC`（45 秒超时保护）在玩家 `0 km/h` 原地挂机及最后一步同样累加，挂机 4 分半钟会自动毕业并领取 `+1,000 PTS` | 在 `tickTutorial` 中仅当 `stepIndex < STEPS.length - 1` 且车辆处于实际行驶或按键操控状态（`curSpeed > 15` 或方向/油门/氮气键按下）时才累加 `stepElapsed` |
+
+### 2. 构建同步与验证
+- 更新 [`index.html`](file:///d:/AI项目集合/赛车游戏/index.html#L266-L272) 中 `desktop-controls.js`、`boot.js`、`drive.js` 的缓存版本号至 `?v=20261106h`。
+- 重新打包并校验 `HorizonOverdrive-CrazyGames.zip`（33 个文件 SHA-256 100% 匹配，总体积 `5,654,448` 字节），`audit_crazygames_project.py` 复核 10/10 项全绿通过、`0` 警告。

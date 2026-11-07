@@ -129,6 +129,34 @@
       'c', 'z', 'x', 'u', 'r', 'g', 't', '[', ']', 'pageup', 'pagedown'
     ];
     if (handledKeys.indexOf(key) < 0 || event.ctrlKey || event.metaKey || event.altKey) return;
+
+    // 快捷键 T（重播教学引导）与 G（打开 3D 车库）：在待机页 (ready)、结算页 (ended) 与行驶中均可随时触发
+    if ((key === 't' || key === 'g') && root.getAttribute('data-desktop') === 'true') {
+      var evtTarget = event.target;
+      var inInput = evtTarget && evtTarget.closest && evtTarget.closest('input,textarea,select,[contenteditable="true"]');
+      var hasDialog = Array.prototype.some.call(document.querySelectorAll('[role="dialog"]'), function (el) {
+        return el.getClientRects().length > 0;
+      });
+      var anyMain = document.querySelector('main[data-mode]');
+      if (!inInput && !hasDialog && anyMain) {
+        event.preventDefault();
+        if (event.repeat) return;
+        if (key === 't') {
+          if (window.HorizonTutorial && typeof window.HorizonTutorial.restart === 'function') {
+            window.HorizonTutorial.restart();
+          }
+          return;
+        }
+        var gBtn = anyMain.querySelector('.garage-preview');
+        if (gBtn && !gBtn.disabled && gBtn.getClientRects().length) {
+          gBtn.click();
+        } else {
+          window.dispatchEvent(new CustomEvent('horizon-open-garage'));
+        }
+        return;
+      }
+    }
+
     var main = driving(event);
     if (!main) return;
 
@@ -137,24 +165,6 @@
       event.preventDefault();
       if (event.repeat) return;
       window.dispatchEvent(new CustomEvent('horizon-quick-emote'));
-      return;
-    }
-
-    // 快捷键 T：重新开启交互式新手驾驶教学引导
-    if (key === 't') {
-      event.preventDefault();
-      if (event.repeat) return;
-      if (window.HorizonTutorial && typeof window.HorizonTutorial.restart === 'function') {
-        window.HorizonTutorial.restart();
-      }
-      return;
-    }
-
-    // 快捷键 G：打开 3D 车库实时预览并切换座驾
-    if (key === 'g') {
-      event.preventDefault();
-      if (event.repeat) return;
-      press(main, '.garage-preview');
       return;
     }
 
@@ -274,8 +284,8 @@
     var hint = document.querySelector('.desktop-key-help');
     if (hint) {
       hint.textContent = zh
-        ? 'W/↑ 加速 · S/↓ 刹车/倒车 · A D/← → 转向 · Shift/N 氮气 · 空格/H 喇叭 · V 远光(连按闪灯) · 2 双闪 · Q/E 转向灯 · B/3 表情 · Z/X 特技 · R 复位 · C 视角 · G 换车 · T 引导'
-        : 'W/↑ Gas · S/↓ Brake/Rev · A D/← → Steer · Shift/N NOS · Space/H Horn · V Beam(Multi-tap Flash) · 2 Hazard · Q/E Signal · B/3 Emote · Z/X Stunt · R Recover · C Cam · G Garage · T Guide';
+        ? 'W/↑ 加速 · S/↓ 刹车/倒车 · A D/← → 转向 · Shift/N 氮气 · F 飞行/警笛 · 空格/H 喇叭 · V 远光(连按闪灯) · 2 双闪 · Q/E 转向灯 · B/3 表情 · Z/X 特技 · R 复位 · C 视角 · G 换车 · T 引导'
+        : 'W/↑ Gas · S/↓ Brake/Rev · A D/← → Steer · Shift/N NOS · F Flight/Siren · Space/H Horn · V Beam(Multi-tap Flash) · 2 Hazard · Q/E Signal · B/3 Emote · Z/X Stunt · R Recover · C Cam · G Garage · T Guide';
     }
     var toggle = document.querySelector('.desktop-hints-toggle');
     if (toggle) {
